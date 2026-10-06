@@ -1,0 +1,9 @@
+bin/
+obj/
+*.user
+*.suo
+appsettings.Development.json
+.vs/
+.nuget-local/
+*.mdf
+*.ldf
