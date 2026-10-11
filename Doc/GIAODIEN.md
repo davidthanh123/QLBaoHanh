@@ -2,6 +2,8 @@
 
 > Tên thương hiệu "RepairPro" chỉ hiện ở logo sidebar và tab trình duyệt, nhóm đổi tùy ý. Đề tài không đặt nặng đồ họa (mục 17 của đề): ưu tiên **nhất quán, đúng nghiệp vụ, dễ bảo vệ**.
 
+> Bộ tài liệu thiết kế của đề tài: [THIETKE.md](./THIETKE.md) · [ERD.md](./ERD.md) · [schema.dbml](./schema.dbml) · [RepairPro.sql](./RepairPro.sql). Tên enum trong file này **phải trùng** với mục 2.3 của THIETKE.md.
+
 ## 1. Ba quy tắc cốt lõi
 
 1. **Không hard-code màu, cỡ chữ, bo góc trong `.cshtml`.** Chỉ dùng class có sẵn trong `wwwroot/css/site.css` (hoặc class Bootstrap 5.3). Không `style="color:#..."`.
@@ -18,7 +20,7 @@
 | `Views/Shared/_Layout.cshtml`      | Khung trang sau đăng nhập: sidebar + header + vùng nội dung + thông báo `TempData`           |
 | `Views/Shared/_Sidebar.cshtml`     | Menu theo vai trò (Admin / Nhân viên kỹ thuật / Khách hàng)                                  |
 | `Views/Shared/_AuthLayout.cshtml`  | Khung không có sidebar (Đăng nhập, 403/404/500)                                              |
-| `docs/GIAO_DIEN.md`                | Chính file này                                                                               |
+| `Doc/GIAODIEN.md`                | Chính file này                                                                               |
 
 ## 3. Bảng màu (tóm tắt)
 
@@ -146,7 +148,7 @@ Dán nguyên khối dưới đây, rồi thêm yêu cầu cụ thể:
 
 ```
 Viết file Razor .cshtml cho project ASP.NET Core 10 MVC + Bootstrap 5.3.3 + jQuery.
-Tuân thủ nghiêm docs/GIAO_DIEN.md (tôi dán kèm bên dưới) và wwwroot/css/site.css.
+Tuân thủ nghiêm Doc/GIAODIEN.md (tôi dán kèm bên dưới) và wwwroot/css/site.css.
 
 Bắt buộc:
 - Không hard-code màu/cỡ chữ/bo góc, không style="" và không <style> trong View. Chỉ dùng class có trong site.css hoặc Bootstrap 5.3.
@@ -160,7 +162,7 @@ Bắt buộc:
 - Ẩn nút theo quyền bằng User.IsInRole(...) và theo trạng thái phiếu/thiết bị.
 - Icon: Material Symbols Outlined (<span class="material-symbols-outlined">ten_icon</span>). Thanh tiến độ: bar-row / bar-track / bar-fill. Thông báo sau khi lưu: TempData["ThanhCong"] / TempData["Loi"] rồi RedirectToAction (không tự viết alert).
 - Đầu file ghi Razor comment: Họ và tên / Mã sinh viên / Nội dung thực hiện.
-- Namespace/model: QuanLy_17_UNETI[STTNhóm]_[MãLớp].Models. Enum trong .Models.Enums. Không đổi Entity/DbContext.
+- Namespace/model: QLBaoHanh_UNETI04_DHTI17A4HN.Models. Enum trong .Models.Enums. Không đổi Entity/DbContext.
 
 Yêu cầu cụ thể: <mô tả màn hình, model/ViewModel, các cột, bộ lọc...>
 ```

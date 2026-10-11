@@ -1,10 +1,18 @@
+// Họ và tên: David Thành
+// Mã sinh viên: 23103100239
+// Nội dung thực hiện: Dữ liệu mẫu cho hệ thống (nguồn dữ liệu mẫu duy nhất, xem Doc/THIETKE.md mục 6).
+
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models;
+using QLBaoHanh_UNETI04_DHTI17A4HN.Models.Enums;
 
 namespace QLBaoHanh_UNETI04_DHTI17A4HN.Data
 {
     // Dữ liệu mẫu theo mục 16 của đề:
-    // 5 loại thiết bị, 15 thiết bị, 30 khách hàng, 2 admin, 3 nhân viên,
-    // 45 phiếu sửa chữa (nhiều trạng thái), 18 chi tiết sửa chữa.
+    // 5 loại thiết bị, 15 thiết bị, 30 khách hàng, 2 admin, 3 nhân viên (kèm 3 hồ sơ kỹ thuật viên),
+    // 45 phiếu sửa chữa (đủ 5 trạng thái), 18 chi tiết sửa chữa, kèm lịch sử trạng thái của từng phiếu.
+    //
+    // Dữ liệu được dựng cho khớp luồng nghiệp vụ trong Doc/THIETKE.md (mục 2.4, 2.5):
+    // mỗi thiết bị có 3 phiếu, chỉ phiếu mới nhất mới có thể đang mở (ChoXuLy/DangXuLy), 2 phiếu cũ đều đã đóng.
     public static class DbSeeder
     {
         public static void Seed(AppDbContext db)
@@ -16,20 +24,38 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Data
             // Mật khẩu mẫu là 123456 (chưa băm). Nếu Module 1 làm băm mật khẩu thì sửa lại chỗ này.
             var taiKhoans = new List<TaiKhoan>
             {
-                TaoTaiKhoan("admin", "Quản trị viên", "Admin"),
-                TaoTaiKhoan("admin2", "Quản trị viên 2", "Admin"),
-                TaoTaiKhoan("nhanvien1", "Nguyễn Văn Kỹ", "NhanVien"),
-                TaoTaiKhoan("nhanvien2", "Trần Thị Thuật", "NhanVien"),
-                TaoTaiKhoan("nhanvien3", "Lê Minh Sửa", "NhanVien"),
-                TaoTaiKhoan("khachhang1", "Phạm Hoàng An", "KhachHang"),
-                TaoTaiKhoan("khachhang2", "Vũ Thị Bình", "KhachHang"),
-                TaoTaiKhoan("khachhang3", "Hoàng Văn Cường", "KhachHang", trangThai: false), // tài khoản bị khóa
+                TaoTaiKhoan("admin", "Quản trị viên", VaiTroEnum.Admin),
+                TaoTaiKhoan("admin2", "Quản trị viên 2", VaiTroEnum.Admin),
+                TaoTaiKhoan("nhanvien1", "Nguyễn Văn Kỹ", VaiTroEnum.NhanVien),
+                TaoTaiKhoan("nhanvien2", "Trần Thị Thuật", VaiTroEnum.NhanVien),
+                TaoTaiKhoan("nhanvien3", "Lê Minh Sửa", VaiTroEnum.NhanVien),
+                TaoTaiKhoan("khachhang1", "Phạm Hoàng An", VaiTroEnum.KhachHang),
+                TaoTaiKhoan("khachhang2", "Vũ Thị Bình", VaiTroEnum.KhachHang),
+                TaoTaiKhoan("khachhang3", "Hoàng Văn Cường", VaiTroEnum.KhachHang, trangThai: false), // tài khoản bị khóa
             };
             db.TaiKhoans.AddRange(taiKhoans);
             db.SaveChanges();
 
-            var nhanViens = taiKhoans.Where(t => t.VaiTro == "NhanVien").ToList();
-            var tkKhachHangs = taiKhoans.Where(t => t.VaiTro == "KhachHang").ToList();
+            var nhanViens = taiKhoans.Where(t => t.VaiTro == VaiTroEnum.NhanVien).ToList();
+            var tkKhachHangs = taiKhoans.Where(t => t.VaiTro == VaiTroEnum.KhachHang).ToList();
+
+            // ===== 1b. Hồ sơ kỹ thuật viên: mỗi tài khoản NhanVien có 1 hồ sơ =====
+            var chuyenMon = new[] { "Điện thoại, máy tính bảng", "Laptop, máy in", "Tivi, thiết bị điện tử" };
+            var kyThuatViens = new List<KyThuatVien>();
+            for (int k = 0; k < nhanViens.Count; k++)
+            {
+                kyThuatViens.Add(new KyThuatVien
+                {
+                    MaTaiKhoan = nhanViens[k].MaTaiKhoan,
+                    HoTen = nhanViens[k].HoTen,
+                    ChuyenMon = chuyenMon[k % chuyenMon.Length],
+                    SoDienThoai = "0901000" + (k + 1).ToString("D3"),
+                    Email = nhanViens[k].Email,
+                    TrangThai = true,
+                });
+            }
+            db.KyThuatViens.AddRange(kyThuatViens);
+            db.SaveChanges();
 
             // ===== 2. Loại thiết bị (5) =====
             var loais = new List<LoaiThietBi>
@@ -59,7 +85,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Data
                     DiaChi = $"Số {i} đường Nguyễn Trãi, Hà Nội",
                     CCCD = "001" + i.ToString("D9"),
                     NgayTao = DateTime.Today.AddDays(-i * 7),
-                    LoaiKhachHang = doanhNghiep ? "Doanh nghiệp" : "Cá nhân",
+                    LoaiKhachHang = doanhNghiep ? LoaiKhachHangEnum.DoanhNghiep : LoaiKhachHangEnum.CaNhan,
                     MaSoThue = doanhNghiep ? "0100" + i.ToString("D6") : null,
                     TrangThai = i != 30,   // khách thứ 30 ngừng hoạt động
                 });
@@ -67,7 +93,8 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Data
             db.KhachHangs.AddRange(khachHangs);
             db.SaveChanges();
 
-            // ===== 4. Thiết bị (15): lẫn lộn còn/hết hạn bảo hành và nhiều trạng thái =====
+            // ===== 4. Thiết bị (15): lẫn lộn còn/hết hạn bảo hành =====
+            // Trạng thái thiết bị tạm đặt KhaDung, sẽ cập nhật theo phiếu mới nhất ở bước 6.
             var thietBis = new List<ThietBi>();
             for (int i = 1; i <= 15; i++)
             {
@@ -82,7 +109,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Data
                     NgayMua = ngayMua,
                     HanBaoHanh = ngayMua.AddMonths(loai.ThoiHanBaoHanhMacDinh),
                     MoTa = $"Thiết bị mẫu số {i}",
-                    TrangThai = i % 5 == 0 ? "Ngừng sử dụng" : i % 3 == 0 ? "Đang sửa chữa" : "Khả dụng",
+                    TrangThai = TrangThaiThietBiEnum.KhaDung,
                     GiaTri = 3_000_000m + i * 1_500_000m,
                 });
             }
@@ -104,9 +131,19 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Data
             db.LinhKiens.AddRange(linhKiens);
             db.SaveChanges();
 
-            // ===== 6. Phiếu sửa chữa (45), chia đều 4 trạng thái =====
-            var trangThaiPhieu = new[] { "Chờ xử lý", "Đang xử lý", "Hoàn thành", "Hủy" };
-            var mucDo = new[] { "Thấp", "Trung bình", "Cao" };
+            // ===== 6. Phiếu sửa chữa (45) = 15 thiết bị x 3 phiếu =====
+            // Vòng 0 (phiếu mới nhất của mỗi thiết bị): đủ 5 trạng thái, mỗi trạng thái 3 phiếu.
+            // Vòng 1, 2 (phiếu cũ): đều đã đóng (HoanThanh/Huy/TuChoi) => mỗi thiết bị tối đa 1 phiếu đang mở.
+            var trangThaiMoiNhat = new[]
+            {
+                TrangThaiPhieuEnum.ChoXuLy, TrangThaiPhieuEnum.DangXuLy, TrangThaiPhieuEnum.HoanThanh,
+                TrangThaiPhieuEnum.Huy, TrangThaiPhieuEnum.TuChoi,
+            };
+            var trangThaiDaDong = new[]
+            {
+                TrangThaiPhieuEnum.HoanThanh, TrangThaiPhieuEnum.Huy, TrangThaiPhieuEnum.TuChoi,
+            };
+            var mucDo = new[] { MucDoEnum.Thap, MucDoEnum.TrungBinh, MucDoEnum.Cao, MucDoEnum.KhanCap };
             var noiDungLoi = new[]
             {
                 "Không lên nguồn",
@@ -116,54 +153,133 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Data
                 "Không kết nối được mạng",
             };
             var phieus = new List<PhieuSuaChua>();
-            for (int i = 1; i <= 45; i++)
+            for (int i = 0; i < 45; i++)
             {
-                var thietBi = thietBis[(i - 1) % thietBis.Count];
-                var trangThai = trangThaiPhieu[i % 4];
-                var ngayTiepNhan = DateTime.Today.AddDays(-i * 4);
+                int idx = i % 15;    // thiết bị thứ idx
+                int vong = i / 15;   // 0 = mới nhất, 1-2 = cũ hơn
+                var thietBi = thietBis[idx];
+                var trangThai = vong == 0 ? trangThaiMoiNhat[idx % 5] : trangThaiDaDong[(idx + vong) % 3];
+                var ngayTiepNhan = DateTime.Today.AddDays(-(vong * 60 + idx * 3 + 1));
+                // ChoXuLy chưa ai tiếp nhận; Huy là khách tự hủy khi còn chờ => cũng chưa có nhân viên tiếp nhận
+                bool daTiepNhan = trangThai != TrangThaiPhieuEnum.ChoXuLy && trangThai != TrangThaiPhieuEnum.Huy;
+
                 phieus.Add(new PhieuSuaChua
                 {
                     MaThietBi = thietBi.MaThietBi,
                     MaKhachHang = thietBi.MaKhachHang,   // thiết bị phải thuộc đúng khách hàng tạo phiếu
+                    MaTaiKhoanTiepNhan = daTiepNhan ? nhanViens[i % nhanViens.Count].MaTaiKhoan : null,
                     NgayTiepNhan = ngayTiepNhan,
                     NoiDungLoi = noiDungLoi[i % noiDungLoi.Length],
                     TrangThai = trangThai,
                     MucDo = mucDo[i % mucDo.Length],
                     HanDuKien = ngayTiepNhan.AddDays(7),
-                    NgayHoanThanh = trangThai == "Hoàn thành" ? (DateTime?)ngayTiepNhan.AddDays(5) : null,
+                    NgayHoanThanh = trangThai == TrangThaiPhieuEnum.HoanThanh ? (DateTime?)ngayTiepNhan.AddDays(5) : null,
+                    LyDoHuyTuChoi = trangThai == TrangThaiPhieuEnum.Huy ? "Khách hàng tự hủy phiếu"
+                                  : trangThai == TrangThaiPhieuEnum.TuChoi ? "Thiết bị hết bảo hành, không thuộc phạm vi sửa chữa"
+                                  : null,
                 });
             }
             db.PhieuSuaChuas.AddRange(phieus);
             db.SaveChanges();
 
-            // ===== 7. Chi tiết sửa chữa (18): chỉ phiếu đang xử lý hoặc hoàn thành mới có =====
+            // Trạng thái thiết bị theo phiếu mới nhất (phieus[idx] chính là phiếu vòng 0 của thiết bị idx)
+            for (int idx = 0; idx < thietBis.Count; idx++)
+            {
+                thietBis[idx].TrangThai = phieus[idx].TrangThai switch
+                {
+                    TrangThaiPhieuEnum.DangXuLy => TrangThaiThietBiEnum.DangSuaChua,
+                    TrangThaiPhieuEnum.TuChoi => TrangThaiThietBiEnum.KhongKhaDung,
+                    _ => TrangThaiThietBiEnum.KhaDung,
+                };
+            }
+            db.SaveChanges();
+
+            // ===== 7. Lịch sử trạng thái: mỗi phiếu có đủ các bước từ lúc tạo đến trạng thái hiện tại =====
+            var khachTheoMa = khachHangs.ToDictionary(k => k.MaKhachHang);
+            var lichSus = new List<LichSuTrangThaiPhieu>();
+
+            void ThemLichSu(PhieuSuaChua p, TrangThaiPhieuEnum? cu, TrangThaiPhieuEnum moi, int nguoiThucHien, DateTime luc, string? ghiChu = null)
+            {
+                lichSus.Add(new LichSuTrangThaiPhieu
+                {
+                    MaPhieu = p.MaPhieu,
+                    MaTaiKhoanThucHien = nguoiThucHien,
+                    TrangThaiCu = cu,
+                    TrangThaiMoi = moi,
+                    ThoiGian = luc,
+                    GhiChu = ghiChu,
+                });
+            }
+
+            foreach (var p in phieus)
+            {
+                // Người tạo phiếu: tài khoản của khách (nếu có), không thì nhân viên nhập hộ
+                int nguoiTao = khachTheoMa[p.MaKhachHang].MaTaiKhoan ?? nhanViens[0].MaTaiKhoan;
+                int nhanVien = p.MaTaiKhoanTiepNhan ?? nhanViens[0].MaTaiKhoan;
+
+                ThemLichSu(p, null, TrangThaiPhieuEnum.ChoXuLy, nguoiTao, p.NgayTiepNhan, "Tạo phiếu sửa chữa");
+                switch (p.TrangThai)
+                {
+                    case TrangThaiPhieuEnum.DangXuLy:
+                        ThemLichSu(p, TrangThaiPhieuEnum.ChoXuLy, TrangThaiPhieuEnum.DangXuLy, nhanVien, p.NgayTiepNhan.AddHours(2), "Tiếp nhận xử lý");
+                        break;
+                    case TrangThaiPhieuEnum.HoanThanh:
+                        ThemLichSu(p, TrangThaiPhieuEnum.ChoXuLy, TrangThaiPhieuEnum.DangXuLy, nhanVien, p.NgayTiepNhan.AddHours(2), "Tiếp nhận xử lý");
+                        ThemLichSu(p, TrangThaiPhieuEnum.DangXuLy, TrangThaiPhieuEnum.HoanThanh, nhanVien, p.NgayHoanThanh!.Value, "Hoàn tất sửa chữa");
+                        break;
+                    case TrangThaiPhieuEnum.Huy:
+                        ThemLichSu(p, TrangThaiPhieuEnum.ChoXuLy, TrangThaiPhieuEnum.Huy, nguoiTao, p.NgayTiepNhan.AddHours(1), p.LyDoHuyTuChoi);
+                        break;
+                    case TrangThaiPhieuEnum.TuChoi:
+                        ThemLichSu(p, TrangThaiPhieuEnum.ChoXuLy, TrangThaiPhieuEnum.TuChoi, nhanVien, p.NgayTiepNhan.AddHours(1), p.LyDoHuyTuChoi);
+                        break;
+                }
+            }
+            db.LichSuTrangThaiPhieus.AddRange(lichSus);
+            db.SaveChanges();
+
+            // ===== 8. Chi tiết sửa chữa (18): chỉ phiếu đang xử lý hoặc hoàn thành mới có =====
             var phieuCoChiTiet = phieus
-                .Where(p => p.TrangThai == "Đang xử lý" || p.TrangThai == "Hoàn thành")
-                .Take(18)
-                .ToList();
+                .Where(p => p.TrangThai == TrangThaiPhieuEnum.DangXuLy || p.TrangThai == TrangThaiPhieuEnum.HoanThanh)
+                .ToList();   // 16 phiếu, 2 phiếu đầu có thêm 1 dòng tiền công => 18 dòng
 
             var chiTiets = new List<ChiTietSuaChua>();
             for (int j = 0; j < phieuCoChiTiet.Count; j++)
             {
+                var kyThuatVien = kyThuatViens[j % kyThuatViens.Count];
                 LinhKien? linhKien = j % 6 == 5 ? null : linhKiens[j % linhKiens.Count];
                 int soLuong = 1 + j % 3;
                 decimal donGia = linhKien?.DonGia ?? 150_000m;   // không dùng linh kiện thì tính tiền công
                 chiTiets.Add(new ChiTietSuaChua
                 {
                     MaPhieu = phieuCoChiTiet[j].MaPhieu,
-                    MaKyThuatVien = nhanViens[j % nhanViens.Count].MaTaiKhoan,
+                    MaKyThuatVien = kyThuatVien.MaKyThuatVien,
                     MaLinhKien = linhKien?.MaLinhKien,
                     SoLuong = soLuong,
                     DonGia = donGia,
-                    ThanhTien = soLuong * donGia,
+                    ThanhTien = soLuong * donGia,   // Controller gán = SoLuong * DonGia (THIETKE.md mục 2.8)
                     KetQuaChanDoan = linhKien == null ? "Vệ sinh, cập nhật phần mềm" : $"Thay {linhKien.TenLinhKien}",
                 });
+
+                if (j < 2)
+                {
+                    chiTiets.Add(new ChiTietSuaChua
+                    {
+                        MaPhieu = phieuCoChiTiet[j].MaPhieu,
+                        MaKyThuatVien = kyThuatVien.MaKyThuatVien,
+                        MaLinhKien = null,
+                        SoLuong = 1,
+                        DonGia = 150_000m,
+                        ThanhTien = 150_000m,
+                        KetQuaChanDoan = "Công sửa chữa",
+                    });
+                }
             }
             db.ChiTietSuaChuas.AddRange(chiTiets);
             db.SaveChanges();
         }
 
-        private static TaiKhoan TaoTaiKhoan(string tenDangNhap, string hoTen, string vaiTro, bool trangThai = true)
+        private static TaiKhoan TaoTaiKhoan(string tenDangNhap, string hoTen, VaiTroEnum vaiTro, bool trangThai = true)
         {
             return new TaiKhoan
             {

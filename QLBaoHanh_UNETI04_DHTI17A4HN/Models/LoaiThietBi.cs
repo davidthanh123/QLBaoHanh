@@ -1,8 +1,14 @@
+// Họ và tên: ........................ (người phụ trách Module 1 điền)
+// Mã sinh viên: ........................
+// Nội dung thực hiện: Entity LoaiThietBi - dữ liệu nền loại thiết bị.
+
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QLBaoHanh_UNETI04_DHTI17A4HN.Models
 {
     // MODULE 1 (Vân): Dữ liệu nền - Loại thiết bị
+    [Table("LoaiThietBi")]
     public class LoaiThietBi
     {
         [Key]
@@ -25,7 +31,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Models
         // Đơn vị: tháng
         [Range(0, 120, ErrorMessage = "Thời hạn bảo hành phải từ 0 đến 120 tháng")]
         [Display(Name = "Thời hạn bảo hành mặc định (tháng)")]
-        public int ThoiHanBaoHanhMacDinh { get; set; }
+        public int ThoiHanBaoHanhMacDinh { get; set; } = 12;
 
         [Display(Name = "Trạng thái")]
         public bool TrangThai { get; set; } = true;

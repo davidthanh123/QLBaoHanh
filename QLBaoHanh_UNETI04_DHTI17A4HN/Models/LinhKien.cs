@@ -1,10 +1,15 @@
+// Họ và tên: ........................ (người phụ trách Module 5 điền)
+// Mã sinh viên: ........................
+// Nội dung thực hiện: Entity LinhKien - quản lý linh kiện.
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QLBaoHanh_UNETI04_DHTI17A4HN.Models
 {
     // MODULE 5 (Vũ): Quản lý linh kiện
-    // LƯU Ý: đề KHÔNG liệt kê thuộc tính của LinhKien, các cột dưới đây là đề xuất của nhóm trưởng.
+    // LƯU Ý: đề KHÔNG liệt kê thuộc tính của LinhKien, các cột dưới đây do nhóm đề xuất (xem Doc/THIETKE.md).
+    [Table("LinhKien")]
     public class LinhKien
     {
         [Key]
@@ -13,11 +18,12 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Models
         [Required(ErrorMessage = "Tên linh kiện không được để trống")]
         [StringLength(150)]
         [Display(Name = "Tên linh kiện")]
-        public string TenLinhKien { get; set; } = string.Empty;
+        public string TenLinhKien { get; set; } = string.Empty;   // unique: cấu hình trong AppDbContext
 
+        [Required(ErrorMessage = "Đơn vị tính không được để trống")]
         [StringLength(30)]
         [Display(Name = "Đơn vị tính")]
-        public string? DonViTinh { get; set; }
+        public string DonViTinh { get; set; } = string.Empty;
 
         [Range(0, double.MaxValue, ErrorMessage = "Đơn giá phải lớn hơn hoặc bằng 0")]
         [Column(TypeName = "decimal(18,2)")]

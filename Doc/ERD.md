@@ -1,5 +1,6 @@
 ```mermaid
 erDiagram
+    %% PHIEN BAN 1.0 - 11/10/2026 | dong bo voi schema.dbml, RepairPro.sql, THIETKE.md
     %% QUAN HE CAC BANG
     LoaiThietBi ||--o{ ThietBi : "phan_loai"
     KhachHang ||--o{ ThietBi : "so_huu"
@@ -23,7 +24,7 @@ erDiagram
         int MaTaiKhoan PK
         nvarchar TenDangNhap "UK"
         nvarchar MatKhau
-        nvarchar MatKhauSalt
+        nvarchar MatKhauSalt "Nullable, de trong neu dung PasswordHasher"
         nvarchar HoTen
         nvarchar Email
         VaiTroEnum VaiTro "Admin, NhanVien, KhachHang"
@@ -48,13 +49,13 @@ erDiagram
         nvarchar TenLoai "UK"
         nvarchar HangSanXuat
         nvarchar MoTa
-        int ThoiHanBaoHanhMacDinh "tinh bang thang"
+        int ThoiHanBaoHanhMacDinh "thang, 0-120"
         bit TrangThai
     }
 
     KhachHang {
         int MaKhachHang PK
-        int MaTaiKhoan FK "UK"
+        int MaTaiKhoan FK "UK, Nullable"
         nvarchar HoTen
         nvarchar SoDienThoai
         nvarchar Email
@@ -121,6 +122,7 @@ erDiagram
         nvarchar DonViTinh
         decimal DonGia
         int SoLuongTon
+        nvarchar MoTa
         bit TrangThai
     }
 
@@ -131,7 +133,7 @@ erDiagram
         int MaLinhKien FK "Nullable"
         int SoLuong
         decimal DonGia
-        decimal ThanhTien
+        decimal ThanhTien "= SoLuong * DonGia"
         nvarchar KetQuaChanDoan
         nvarchar GhiChu
     }

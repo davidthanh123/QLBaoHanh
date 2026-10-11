@@ -1,9 +1,16 @@
+// Họ và tên: ........................ (người phụ trách Module 5 điền)
+// Mã sinh viên: ........................
+// Nội dung thực hiện: Entity ChiTietSuaChua - kết quả chẩn đoán, linh kiện và chi phí sửa chữa.
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QLBaoHanh_UNETI04_DHTI17A4HN.Models
 {
-    // MODULE 5 (Vũ): Kết quả sửa chữa - Dashboard - Thống kê
+    // MODULE 5 (Vũ): Kết quả sửa chữa - Linh kiện - Chi phí
+    // Form thêm chi tiết nằm trong luồng sửa chữa của Module 4, nhưng file Entity này thuộc Module 5.
+    // Tổng chi phí của phiếu KHÔNG lưu cột riêng: = SUM(ThanhTien) theo MaPhieu (Doc/THIETKE.md mục 2.1).
+    [Table("ChiTietSuaChua")]
     public class ChiTietSuaChua
     {
         [Key]
@@ -12,11 +19,11 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Models
         [Display(Name = "Phiếu sửa chữa")]
         public int MaPhieu { get; set; }
 
-        // Kỹ thuật viên = tài khoản có vai trò NhanVien
+        // Trỏ vào hồ sơ KyThuatVien (không trỏ thẳng TaiKhoan)
         [Display(Name = "Kỹ thuật viên")]
         public int MaKyThuatVien { get; set; }
 
-        // Nullable: có phiếu chỉ tính công sửa, không dùng linh kiện
+        // Null nếu dòng này chỉ tính công chẩn đoán/sửa, không dùng linh kiện
         [Display(Name = "Linh kiện")]
         public int? MaLinhKien { get; set; }
 
@@ -29,7 +36,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Models
         [Display(Name = "Đơn giá")]
         public decimal DonGia { get; set; }
 
-        // Controller gán = SoLuong * DonGia
+        // KHÔNG cho người dùng nhập: Controller gán = SoLuong * DonGia trước SaveChanges (DB có CHECK đối chiếu)
         [Column(TypeName = "decimal(18,2)")]
         [Display(Name = "Thành tiền")]
         public decimal ThanhTien { get; set; }
@@ -46,7 +53,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Models
         public PhieuSuaChua? PhieuSuaChua { get; set; }
 
         [ForeignKey(nameof(MaKyThuatVien))]
-        public TaiKhoan? KyThuatVien { get; set; }
+        public KyThuatVien? KyThuatVien { get; set; }
 
         [ForeignKey(nameof(MaLinhKien))]
         public LinhKien? LinhKien { get; set; }

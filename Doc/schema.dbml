@@ -1,5 +1,11 @@
 // =========================================================
 // RepairPro - Quan ly bao hanh & sua chua thiet bi (De tai 17)
+// PHIEN BAN 1.0 - CHOT NGAY 11/10/2026
+// Dong bo voi: ERD.md, RepairPro.sql, THIETKE.md (doi 1 file -> doi ca 4 trong cung PR)
+// 12 bang: 7 bat buoc (de muc 10) + 2 bo sung nghiep vu (KyThuatVien, LichSuTrangThaiPhieu)
+//          + 3 nang cao (NhatKyDangNhap, TepDinhKem, ThongBao)
+// Quy uoc: cot enum luu dang CHUOI (nvarchar + CHECK, gia tri ASCII khong dau);
+//          trong EF Core dung .HasConversion<string>() cho cac cot enum.
 // =========================================================
 
 Enum VaiTroEnum {
@@ -97,9 +103,9 @@ Table NhatKyDangNhap {
 Table LoaiThietBi {
   MaLoai int [pk, increment]
   TenLoai nvarchar(100) [not null, unique]
-  HangSanXuat nvarchar(100) [null]
+  HangSanXuat nvarchar(100) [not null]
   MoTa nvarchar(500) [null]
-  ThoiHanBaoHanhMacDinh int [not null, default: 12, note: 'Tinh bang thang, phai >= 0']
+  ThoiHanBaoHanhMacDinh int [not null, default: 12, note: 'Tinh bang thang, 0..120']
   TrangThai bit [not null, default: 1]
 }
 
@@ -138,12 +144,12 @@ Table ThietBi {
   MaKhachHang int [not null]
   SerialNumber nvarchar(100) [not null, unique]
   TenThietBi nvarchar(150) [not null]
-  NgayMua date [null]
-  HanBaoHanh date [null, note: 'Phai >= NgayMua']
+  NgayMua date [not null]
+  HanBaoHanh date [not null, note: 'Phai >= NgayMua. Goi y khi them moi = NgayMua + ThoiHanBaoHanhMacDinh (thang), cho phep sua']
   MoTa nvarchar(500) [null]
   TrangThai TrangThaiThietBiEnum [not null, default: 'KhaDung']
   GhiChu nvarchar(500) [null]
-  GiaTri decimal(18,2) [null, note: 'Phai >= 0']
+  GiaTri decimal(18,2) [not null, default: 0, note: 'Phai >= 0']
 
   indexes {
     MaKhachHang
@@ -200,6 +206,7 @@ Table LinhKien {
   DonViTinh nvarchar(30) [not null, note: 'vd: Cai, Hop, Binh...']
   DonGia decimal(18,2) [not null, default: 0, note: 'Phai >= 0']
   SoLuongTon int [not null, default: 0, note: 'Phai >= 0']
+  MoTa nvarchar(500) [null]
   TrangThai bit [not null, default: 1]
 }
 
@@ -210,7 +217,7 @@ Table ChiTietSuaChua {
   MaLinhKien int [null, note: 'Null neu chi la cong chan doan/sua, khong dung linh kien']
   SoLuong int [not null, default: 1, note: 'Phai > 0']
   DonGia decimal(18,2) [not null, default: 0, note: 'Phai >= 0']
-  ThanhTien decimal(18,2) [not null, note: 'He thong tinh = SoLuong * DonGia, khong cho nhap tay']
+  ThanhTien decimal(18,2) [not null, note: 'Controller gan = SoLuong * DonGia (khong cho nhap tay); DB co CHECK doi chieu']
   KetQuaChanDoan nvarchar(1000) [null]
   GhiChu nvarchar(500) [null]
 
@@ -257,22 +264,22 @@ Table ThongBao {
 // ---------------------------------------------------------
 // QUAN HE
 // ---------------------------------------------------------
-Ref: ThietBi.MaLoai > LoaiThietBi.MaLoai                          // 1 - n
-Ref: ThietBi.MaKhachHang > KhachHang.MaKhachHang                  // 1 - n
-Ref: KhachHang.MaTaiKhoan - TaiKhoan.MaTaiKhoan                   // 1 - 0..1
-Ref: KyThuatVien.MaTaiKhoan - TaiKhoan.MaTaiKhoan                 // 1 - 0..1
-Ref: PhieuSuaChua.MaThietBi > ThietBi.MaThietBi                   // 1 - n
-Ref: PhieuSuaChua.MaKhachHang > KhachHang.MaKhachHang             // 1 - n
-Ref: PhieuSuaChua.MaTaiKhoanTiepNhan > TaiKhoan.MaTaiKhoan        // 1 - 0..n
-Ref: ChiTietSuaChua.MaPhieu > PhieuSuaChua.MaPhieu                // 1 - n
-Ref: ChiTietSuaChua.MaKyThuatVien > KyThuatVien.MaKyThuatVien     // 1 - n
-Ref: ChiTietSuaChua.MaLinhKien > LinhKien.MaLinhKien              // 1 - 0..n
-Ref: LichSuTrangThaiPhieu.MaPhieu > PhieuSuaChua.MaPhieu          // 1 - n
-Ref: LichSuTrangThaiPhieu.MaTaiKhoanThucHien > TaiKhoan.MaTaiKhoan // 1 - n
-Ref: NhatKyDangNhap.MaTaiKhoan > TaiKhoan.MaTaiKhoan              // 1 - 0..n
-Ref: TepDinhKem.MaTaiKhoanUpload > TaiKhoan.MaTaiKhoan            // 1 - 0..n
-Ref: ThongBao.MaTaiKhoanNhan > TaiKhoan.MaTaiKhoan                // 1 - n
-Ref: ThongBao.MaPhieu > PhieuSuaChua.MaPhieu                      // 1 - 0..n
+Ref: ThietBi.MaLoai > LoaiThietBi.MaLoai [delete: restrict]                          // 1 - n
+Ref: ThietBi.MaKhachHang > KhachHang.MaKhachHang [delete: restrict]                  // 1 - n
+Ref: KhachHang.MaTaiKhoan - TaiKhoan.MaTaiKhoan [delete: restrict]                   // 1 - 0..1
+Ref: KyThuatVien.MaTaiKhoan - TaiKhoan.MaTaiKhoan [delete: restrict]                 // 1 - 0..1
+Ref: PhieuSuaChua.MaThietBi > ThietBi.MaThietBi [delete: restrict]                   // 1 - n
+Ref: PhieuSuaChua.MaKhachHang > KhachHang.MaKhachHang [delete: restrict]             // 1 - n
+Ref: PhieuSuaChua.MaTaiKhoanTiepNhan > TaiKhoan.MaTaiKhoan [delete: restrict]        // 1 - 0..n
+Ref: ChiTietSuaChua.MaPhieu > PhieuSuaChua.MaPhieu [delete: restrict]                // 1 - n
+Ref: ChiTietSuaChua.MaKyThuatVien > KyThuatVien.MaKyThuatVien [delete: restrict]     // 1 - n
+Ref: ChiTietSuaChua.MaLinhKien > LinhKien.MaLinhKien [delete: restrict]              // 1 - 0..n
+Ref: LichSuTrangThaiPhieu.MaPhieu > PhieuSuaChua.MaPhieu [delete: restrict]          // 1 - n
+Ref: LichSuTrangThaiPhieu.MaTaiKhoanThucHien > TaiKhoan.MaTaiKhoan [delete: restrict] // 1 - n
+Ref: NhatKyDangNhap.MaTaiKhoan > TaiKhoan.MaTaiKhoan [delete: restrict]              // 1 - 0..n
+Ref: TepDinhKem.MaTaiKhoanUpload > TaiKhoan.MaTaiKhoan [delete: restrict]            // 1 - 0..n
+Ref: ThongBao.MaTaiKhoanNhan > TaiKhoan.MaTaiKhoan [delete: restrict]                // 1 - n
+Ref: ThongBao.MaPhieu > PhieuSuaChua.MaPhieu [delete: restrict]                      // 1 - 0..n
 
 // ---------------------------------------------------------
 // GHI CHU KHI CAU HINH EF CORE (OnModelCreating)
@@ -285,5 +292,9 @@ Ref: ThongBao.MaPhieu > PhieuSuaChua.MaPhieu                      // 1 - 0..n
 //       .WithMany(t => t.PhieuSuaChuas)
 //       .HasForeignKey(p => p.MaThietBi)
 //       .OnDelete(DeleteBehavior.Restrict);
-// ThanhTien: cau hinh .HasComputedColumnSql("[SoLuong] * [DonGia]", stored: true)
-// hoac tinh trong code truoc khi luu.
+// Enum: khai bao trong Models/Enums/Enums.cs, luu DB dang chuoi:
+//   modelBuilder.Entity<PhieuSuaChua>().Property(p => p.TrangThai).HasConversion<string>().HasMaxLength(20);
+// ThanhTien la cot thuong (khong phai computed column): Controller gan
+//   = SoLuong * DonGia truoc khi SaveChanges; DB co CHECK CK_CT_ThanhTien doi chieu.
+// Unique co dieu kien (cot nullable): KhachHang.MaTaiKhoan, KhachHang.CCCD
+//   -> HasIndex(...).IsUnique() (EF Core tu them filter WHERE ... IS NOT NULL).
