@@ -1,50 +1,68 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+@{
+    var tieuDe = ViewData["Title"] as string ?? "";
+}
+<!DOCTYPE html>
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - QLBaoHanh_UNETI04_DHTI17A4HN</title>
-    <script type="importmap"></script>
+    <title>@(string.IsNullOrEmpty(tieuDe) ? "" : tieuDe + " - ")QLBaoHanh</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/QLBaoHanh_UNETI04_DHTI17A4HN.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">QLBaoHanh_UNETI04_DHTI17A4HN</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+    <div class="qb-app">
+        <partial name="_Sidebar" />
+        <div class="qb-backdrop" id="qbBackdrop"></div>
+
+        <div class="qb-main">
+            <header class="qb-topbar">
+                <button type="button" class="qb-toggle" id="qbToggle" aria-label="Mở menu"><i class="bi bi-list"></i></button>
+                <h1>@tieuDe</h1>
+            </header>
+
+            <main class="qb-content" role="main">
+                @* Controller báo kết quả: TempData["ThanhCong"] = "Đã lưu"; hoặc TempData["Loi"] = "..."; *@
+                @if (TempData["ThanhCong"] is string thanhCong)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @thanhCong
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+                    </div>
+                }
+                @if (TempData["Loi"] is string loi)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        @loi
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+                    </div>
+                }
+                @RenderBody()
+            </main>
+        </div>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - QLBaoHanh_UNETI04_DHTI17A4HN - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        // Mobile: nút ☰ mở/đóng sidebar dạng drawer, bấm nền tối để đóng
+        (function () {
+            var sb = document.getElementById('qbSidebar');
+            var bd = document.getElementById('qbBackdrop');
+            var btn = document.getElementById('qbToggle');
+            if (!sb || !bd || !btn) return;
+            function toggle(open) {
+                sb.classList.toggle('is-open', open);
+                bd.classList.toggle('is-open', open);
+            }
+            btn.addEventListener('click', function () { toggle(!sb.classList.contains('is-open')); });
+            bd.addEventListener('click', function () { toggle(false); });
+        })();
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

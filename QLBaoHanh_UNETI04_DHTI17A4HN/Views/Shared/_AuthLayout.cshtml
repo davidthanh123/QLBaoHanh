@@ -1,0 +1,28 @@
+@* Layout KHÔNG có sidebar, dùng cho Đăng nhập và các trang lỗi.
+   Trong View: @{ Layout = "_AuthLayout"; ViewData["Title"] = "Đăng nhập"; } *@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@(ViewData["Title"] is string t && t.Length > 0 ? t + " - " : "")QLBaoHanh</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />
+</head>
+<body class="qb-auth">
+    <div class="card shadow-sm border-0 qb-auth-card">
+        <div class="card-body p-4">
+            <div class="qb-auth-brand">
+                <i class="bi bi-shield-check"></i>
+                <h4 class="mt-2 mb-0">QLBaoHanh</h4>
+            </div>
+            @RenderBody()
+        </div>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
