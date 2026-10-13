@@ -39,7 +39,7 @@ QLBaoHanh/
     ├── Models/                        # Entity theo ERD, mỗi Entity 1 file, đúng 1 người phụ trách
     │   └── Enums/                     # Enums.cs — 9 enum dùng chung (xem THIETKE.md mục 2.3)
     ├── ViewModels/                    # Lớp dữ liệu riêng cho View, không ánh xạ CSDL (cần thêm khi dùng)
-    ├── Helpers/                       # UiHelper.cs theo GIAODIEN.md (cần thêm)
+    ├── Helpers/                       # UiHelper.cs: nhãn + màu badge cho enum, định dạng tiền/ngày (theo GIAODIEN.md mục 4, 5)
     ├── Data/                          # AppDbContext, DbSeeder (nguồn dữ liệu mẫu duy nhất)
     ├── Migrations/                    # Chỉ trưởng nhóm tạo Migration (xem THIETKE.md mục 4)
     ├── Views/                         # .cshtml chia theo Controller; Shared/ (layout, sidebar) chỉ 1 người sửa
