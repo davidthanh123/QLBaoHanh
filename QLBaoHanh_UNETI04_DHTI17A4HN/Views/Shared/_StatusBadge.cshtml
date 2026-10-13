@@ -1,0 +1,19 @@
+@* Họ và tên: David Thành *@
+@* Mã sinh viên: 23103100239 *@
+@* Nội dung thực hiện: Partial vẽ badge từ BadgeInfo (UiHelper). Gọi: <partial name="_StatusBadge" model="UiHelper.Badge(item.TrangThai)" /> *@
+@using QLBaoHanh_UNETI04_DHTI17A4HN.Helpers
+@model BadgeInfo
+@{
+    // Kind do UiHelper quyết định: "level" = MucDo, "role" = VaiTro/LoaiKhachHang, còn lại = badge trạng thái
+    var lop = Model.Kind switch
+    {
+        "level" => "level-badge",
+        "role" => "role-chip",
+        _ => "status-badge",
+    };
+}
+<span class="@lop @Model.Css">@Model.Text</span>
+@if (!string.IsNullOrEmpty(Model.Note))
+{
+    <span class="badge-note @Model.NoteCss">@Model.Note</span>
+}
