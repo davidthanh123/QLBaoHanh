@@ -1,0 +1,71 @@
+@using System.Security.Claims
+@{
+    var ctrl = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+
+    // Đặt = false khi đã làm xong đăng nhập. Lúc đó chưa đăng nhập sẽ không thấy menu nào.
+    const bool xemTruoc = true;
+
+    var daDangNhap = User.Identity?.IsAuthenticated ?? false;
+    var vaiTro = User.FindFirst(ClaimTypes.Role)?.Value ?? (xemTruoc ? "Admin" : "");
+    var hoTen = User.FindFirst("HoTen")?.Value ?? User.Identity?.Name ?? (xemTruoc ? "Xem trước" : "Khách");
+
+    // Các nhóm vai trò (phải trùng tên trong VaiTroEnum)
+    var tatCa = new[] { "Admin", "NhanVien", "KhachHang" };
+    var adminNv = new[] { "Admin", "NhanVien" };
+    var chiAdmin = new[] { "Admin" };
+
+    // (Nhóm, Tên hiển thị, Controller, Action, Icon Bootstrap Icons, Vai trò được thấy)
+    // Thêm mục menu = thêm 1 dòng ở đây.
+    var menu = new List<(string Nhom, string Ten, string Ctrl, string Act, string Icon, string[] Roles)>
+    {
+        ("Tổng quan", "Dashboard",         "Dashboard",      "Index", "speedometer2",  chiAdmin),
+
+        ("Bảo hành",  "Phiếu sửa chữa",    "PhieuSuaChua",   "Index", "tools",         adminNv),
+        ("Bảo hành",  "Khách hàng",        "KhachHang",      "Index", "people",        adminNv),
+        ("Bảo hành",  "Kỹ thuật viên",     "KyThuatVien",    "Index", "person-gear",   chiAdmin),
+
+        ("Thiết bị",  "Thiết bị",          "ThietBi",        "Index", "pc-display",    tatCa),
+        ("Thiết bị",  "Loại thiết bị",     "LoaiThietBi",    "Index", "tags",          chiAdmin),
+        ("Thiết bị",  "Linh kiện",         "LinhKien",       "Index", "box-seam",      adminNv),
+
+        ("Hệ thống",  "Tài khoản",         "TaiKhoan",       "Index", "person-lock",   chiAdmin),
+        ("Hệ thống",  "Nhật ký đăng nhập", "NhatKyDangNhap", "Index", "clock-history", chiAdmin),
+    };
+
+    var hienThi = menu.Where(m => m.Roles.Contains(vaiTro)).GroupBy(m => m.Nhom);
+}
+<aside class="qb-sidebar" id="qbSidebar">
+    <a class="qb-brand" href="@Url.Action("Index", "Home")">
+        <i class="bi bi-shield-check"></i>
+        <span>QLBaoHanh</span>
+    </a>
+
+    <nav class="qb-nav">
+        @foreach (var nhom in hienThi)
+        {
+            <div class="qb-group">@nhom.Key</div>
+            foreach (var m in nhom)
+            {
+                var active = string.Equals(ctrl, m.Ctrl, StringComparison.OrdinalIgnoreCase);
+                <a class="qb-link @(active ? "active" : "")" href="@Url.Action(m.Act, m.Ctrl)" @(active ? "aria-current=page" : "")>
+                    <i class="bi bi-@m.Icon"></i>
+                    <span>@m.Ten</span>
+                </a>
+            }
+        }
+    </nav>
+
+    <div class="qb-user">
+        <span class="qb-avatar">@UiHelper.VietTat(hoTen)</span>
+        <div class="qb-user-info">
+            <div class="name">@hoTen</div>
+            <div class="role">@vaiTro</div>
+        </div>
+        @if (daDangNhap)
+        {
+            <form asp-controller="TaiKhoan" asp-action="DangXuat" method="post" class="m-0">
+                <button type="submit" class="qb-logout" title="Đăng xuất" aria-label="Đăng xuất"><i class="bi bi-box-arrow-right"></i></button>
+            </form>
+        }
+    </div>
+</aside>
