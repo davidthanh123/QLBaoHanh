@@ -1,0 +1,38 @@
+@*
+   Họ và tên: Vân
+   Mã sinh viên: 23103100203
+   Nội dung thực hiện: Module 1 - Modal xác nhận dùng chung cho thao tác xóa/khóa. Nút mở modal cần: data-bs-toggle="modal" data-bs-target="#qbXacNhan"
+   và data-action (URL POST), data-message (nội dung), tùy chọn data-title, data-ok (chữ trên nút xác nhận).
+*@
+<div class="modal fade" id="qbXacNhan" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="post" action="#">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title qb-confirm-title">Xác nhận</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body qb-confirm-msg"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger qb-confirm-ok">Xác nhận</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var modal = document.getElementById('qbXacNhan');
+        if (!modal) return;
+        modal.addEventListener('show.bs.modal', function (e) {
+            var nut = e.relatedTarget;
+            if (!nut) return;
+            modal.querySelector('form').setAttribute('action', nut.getAttribute('data-action') || '#');
+            modal.querySelector('.qb-confirm-msg').textContent = nut.getAttribute('data-message') || '';
+            modal.querySelector('.qb-confirm-title').textContent = nut.getAttribute('data-title') || 'Xác nhận';
+            modal.querySelector('.qb-confirm-ok').textContent = nut.getAttribute('data-ok') || 'Xác nhận';
+        });
+    });
+</script>

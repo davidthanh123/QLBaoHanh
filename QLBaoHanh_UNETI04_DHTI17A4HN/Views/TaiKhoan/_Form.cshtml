@@ -1,0 +1,96 @@
+@*
+   Họ và tên: Vân
+   Mã sinh viên: 23103100203
+   Nội dung thực hiện: Form dùng chung cho Thêm và Sửa tài khoản (ViewModel TaiKhoanFormViewModel).
+*@
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model TaiKhoanFormViewModel
+@{
+    var laSua = Model.MaTaiKhoan > 0;
+    var laChinhMinh = ViewBag.LaChinhMinh as bool? ?? false;
+    var dsVaiTro = Enum.GetValues<VaiTroEnum>().Select(v => new SelectListItem(UiHelper.Badge(v).Text, v.ToString()));
+}
+
+<form method="post" action="@(laSua ? Url.Action("Edit", new { id = Model.MaTaiKhoan }) : Url.Action("Create"))">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="MaTaiKhoan" />
+    <div asp-validation-summary="ModelOnly"></div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="TenDangNhap" class="form-label @(laSua ? "" : "required")"></label>
+                    @if (laSua)
+                    {
+                        <input asp-for="TenDangNhap" class="form-control is-system" readonly title="Không đổi được tên đăng nhập" />
+                    }
+                    else
+                    {
+                        <input asp-for="TenDangNhap" class="form-control" autocomplete="off" />
+                        <span asp-validation-for="TenDangNhap"></span>
+                    }
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="HoTen" class="form-label required"></label>
+                    <input asp-for="HoTen" class="form-control" />
+                    <span asp-validation-for="HoTen"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Email" class="form-label required"></label>
+                    <input asp-for="Email" class="form-control" type="email" />
+                    <span asp-validation-for="Email"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="VaiTro" class="form-label required"></label>
+                    <select asp-for="VaiTro" asp-items="dsVaiTro" class="form-select" disabled="@laChinhMinh"></select>
+                    @if (laChinhMinh)
+                    {
+                        <input type="hidden" asp-for="VaiTro" />
+                        <div class="form-text">Không thể tự đổi vai trò của tài khoản đang đăng nhập.</div>
+                    }
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="MatKhau" class="form-label @(laSua ? "" : "required")"></label>
+                    <input asp-for="MatKhau" class="form-control" autocomplete="new-password" />
+                    @if (laSua)
+                    {
+                        <div class="form-text">Để trống nếu không muốn đổi mật khẩu.</div>
+                    }
+                    <span asp-validation-for="MatKhau"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="XacNhanMatKhau" class="form-label"></label>
+                    <input asp-for="XacNhanMatKhau" class="form-control" autocomplete="new-password" />
+                    <span asp-validation-for="XacNhanMatKhau"></span>
+                </div>
+                <div class="col-12">
+                    @if (laChinhMinh)
+                    {
+                        <input type="hidden" name="TrangThai" value="true" />
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" checked disabled />
+                            <label class="form-check-label">Tài khoản hoạt động (không thể tự khóa chính mình)</label>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="form-check">
+                            <input asp-for="TrangThai" class="form-check-input" />
+                            <label asp-for="TrangThai" class="form-check-label">Tài khoản hoạt động (bỏ chọn để khóa)</label>
+                        </div>
+                    }
+                </div>
+            </div>
+            @if (!laSua)
+            {
+                <p class="form-text mt-3 mb-0">Hồ sơ khách hàng và hồ sơ kỹ thuật viên được tạo ở mục Khách hàng / Kỹ thuật viên, sau khi có tài khoản.</p>
+            }
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <a class="btn btn-outline-secondary" asp-action="Index">Hủy</a>
+        <button type="submit" class="btn btn-primary">@(laSua ? "Lưu thay đổi" : "Tạo tài khoản")</button>
+    </div>
+</form>
