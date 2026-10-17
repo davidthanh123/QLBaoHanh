@@ -4,7 +4,7 @@
 
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models.Enums;
-
+using QLBaoHanh_UNETI04_DHTI17A4HN.Helpers;
 namespace QLBaoHanh_UNETI04_DHTI17A4HN.Data
 {
     // Dữ liệu mẫu theo mục 16 của đề:
@@ -21,7 +21,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Data
             if (db.TaiKhoans.Any()) return;
 
             // ===== 1. Tài khoản: 2 Admin, 3 NhanVien, 3 KhachHang (1 tài khoản bị khóa) =====
-            // Mật khẩu mẫu là 123456 (chưa băm). Nếu Module 1 làm băm mật khẩu thì sửa lại chỗ này.
+            // Mật khẩu mẫu là 123456, được băm bằng PasswordHasher<TaiKhoan> (MatKhauHelper) trong TaoTaiKhoan.
             var taiKhoans = new List<TaiKhoan>
             {
                 TaoTaiKhoan("admin", "Quản trị viên", VaiTroEnum.Admin),
@@ -281,15 +281,16 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Data
 
         private static TaiKhoan TaoTaiKhoan(string tenDangNhap, string hoTen, VaiTroEnum vaiTro, bool trangThai = true)
         {
-            return new TaiKhoan
+            var taiKhoan = new TaiKhoan
             {
                 TenDangNhap = tenDangNhap,
-                MatKhau = "123456",
                 HoTen = hoTen,
                 Email = $"{tenDangNhap}@baohanh.vn",
                 VaiTro = vaiTro,
                 TrangThai = trangThai,
             };
+            taiKhoan.MatKhau = MatKhauHelper.Bam(taiKhoan, "123456");
+            return taiKhoan;
         }
     }
 }

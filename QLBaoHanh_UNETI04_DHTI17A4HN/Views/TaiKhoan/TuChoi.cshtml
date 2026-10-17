@@ -1,0 +1,24 @@
+@*
+   Họ và tên: Vân
+   Mã sinh viên: 23103100203
+   Nội dung thực hiện: Trang 403 "Không có quyền" khi truy cập trái vai trò.
+*@
+@{
+    Layout = "_AuthLayout";
+    ViewData["Title"] = "Không có quyền";
+    var daDangNhap = Context.Session.DaDangNhap();
+}
+
+<div class="text-center">
+    <i class="bi bi-shield-lock" style="font-size:2.5rem"></i>
+    <h5 class="mt-2">Không có quyền truy cập</h5>
+    <p class="text-muted">Tài khoản của bạn không được phép xem trang này.</p>
+    @if (daDangNhap)
+    {
+        <a class="btn btn-primary" asp-controller="Home" asp-action="Index">Về trang chủ</a>
+    }
+    else
+    {
+        <a class="btn btn-primary" asp-action="DangNhap">Đăng nhập</a>
+    }
+</div>

@@ -1,0 +1,72 @@
+@*
+   Họ và tên: Vân
+   Mã sinh viên: 23103100203
+   Nội dung thực hiện: Nhật ký đăng nhập (chỉ xem): lọc theo tên đăng nhập và kết quả.
+*@
+@model IEnumerable<NhatKyDangNhap>
+@{
+    ViewData["Title"] = "Nhật ký đăng nhập";
+    var tuKhoa = ViewBag.TuKhoa as string;
+    var ketQuaLoc = ViewBag.KetQua as KetQuaDangNhapEnum?;
+    var soDongToiDa = (int)(ViewBag.SoDongToiDa ?? 200);
+    var coLoc = !string.IsNullOrWhiteSpace(tuKhoa) || ketQuaLoc.HasValue;
+}
+
+<div class="page-header">
+    <div>
+        <h1>Nhật ký đăng nhập</h1>
+        <p>Ghi lại mọi lần thử đăng nhập, kể cả thất bại. Hiển thị tối đa @soDongToiDa lần gần nhất.</p>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="search">
+        <label class="form-label" for="tuKhoa">Tên đăng nhập đã nhập</label>
+        <input id="tuKhoa" name="tuKhoa" value="@tuKhoa" class="form-control" placeholder="Nhập một phần tên đăng nhập" />
+    </div>
+    <div>
+        <label class="form-label" for="ketQua">Kết quả</label>
+        <select id="ketQua" name="ketQua" class="form-select">
+            <option value="">Tất cả</option>
+            @foreach (var k in Enum.GetValues<KetQuaDangNhapEnum>())
+            {
+                <option value="@k" selected="@(ketQuaLoc == k)">@UiHelper.Badge(k).Text</option>
+            }
+        </select>
+    </div>
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+        @if (coLoc)
+        {
+            <a class="btn btn-outline-secondary" asp-action="Index">Xóa lọc</a>
+        }
+    </div>
+</form>
+
+<div class="table-card">
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <i class="bi bi-clock-history" style="font-size:2rem"></i>
+            <h3>@(coLoc ? "Không có bản ghi phù hợp" : "Chưa có lần đăng nhập nào")</h3>
+        </div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead><tr><th>Thời gian</th><th>Tên đăng nhập đã nhập</th><th>Kết quả</th><th>Địa chỉ IP</th></tr></thead>
+            <tbody>
+                @foreach (var n in Model)
+                {
+                    <tr>
+                        <td>@UiHelper.NgayGio(n.ThoiGian)</td>
+                        <td>@n.TenDangNhapNhap</td>
+                        <td><partial name="_StatusBadge" model="UiHelper.Badge(n.KetQua)" /></td>
+                        <td class="mono">@(n.DiaChiIP ?? "—")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="table-footer"><span>Đang hiển thị @Model.Count() bản ghi</span></div>
+    }
+</div>

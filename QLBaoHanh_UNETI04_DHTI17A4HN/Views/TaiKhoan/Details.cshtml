@@ -1,0 +1,73 @@
+@*
+   Họ và tên: Vân
+   Mã sinh viên: 23103100203
+   Nội dung thực hiện: Chi tiết tài khoản và 10 lần đăng nhập gần nhất.
+*@
+@model TaiKhoan
+@{
+    ViewData["Title"] = "Chi tiết tài khoản";
+    var nhatKy = ViewBag.NhatKy as List<NhatKyDangNhap> ?? new List<NhatKyDangNhap>();
+    var maDangNhap = ViewBag.MaDangNhap as int?;
+}
+
+<div class="page-header">
+    <div>
+        <h1>@Model.TenDangNhap</h1>
+        <p>@Model.HoTen</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-outline-secondary" asp-action="Index">Quay lại</a>
+        <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.MaTaiKhoan">Sửa tài khoản</a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <dl class="detail-grid">
+            <div><dt>Tên đăng nhập</dt><dd>@Model.TenDangNhap</dd></div>
+            <div><dt>Họ tên</dt><dd>@Model.HoTen</dd></div>
+            <div><dt>Email</dt><dd>@Model.Email</dd></div>
+            <div><dt>Vai trò</dt><dd><partial name="_StatusBadge" model="UiHelper.Badge(Model.VaiTro)" /></dd></div>
+            <div><dt>Trạng thái</dt><dd><partial name="_StatusBadge" model="UiHelper.BadgeHoatDong(Model.TrangThai, true)" /></dd></div>
+            <div><dt>Ngày tạo</dt><dd>@UiHelper.NgayGio(Model.NgayTaoTaiKhoan)</dd></div>
+            <div><dt>Đăng nhập cuối</dt><dd>@UiHelper.NgayGio(Model.LanDangNhapCuoi)</dd></div>
+            <div><dt>Số lần nhập sai liên tiếp</dt><dd>@Model.SoLanDangNhapSai</dd></div>
+            @if (Model.KhoaDenNgay.HasValue && Model.KhoaDenNgay.Value > DateTime.Now)
+            {
+                <div><dt>Khóa tạm đến</dt><dd>@UiHelper.NgayGio(Model.KhoaDenNgay)</dd></div>
+            }
+            @if (Model.KhachHang != null)
+            {
+                <div><dt>Hồ sơ khách hàng</dt><dd>@Model.KhachHang.HoTen</dd></div>
+            }
+            @if (Model.KyThuatVien != null)
+            {
+                <div><dt>Hồ sơ kỹ thuật viên</dt><dd>@Model.KyThuatVien.HoTen</dd></div>
+            }
+        </dl>
+    </div>
+</div>
+
+<h2 class="h3 mb-3">Đăng nhập gần đây</h2>
+<div class="table-card">
+    @if (!nhatKy.Any())
+    {
+        <div class="empty-state"><p>Tài khoản này chưa có lần đăng nhập nào.</p></div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead><tr><th>Thời gian</th><th>Kết quả</th><th>Địa chỉ IP</th></tr></thead>
+            <tbody>
+                @foreach (var n in nhatKy)
+                {
+                    <tr>
+                        <td>@UiHelper.NgayGio(n.ThoiGian)</td>
+                        <td><partial name="_StatusBadge" model="UiHelper.Badge(n.KetQua)" /></td>
+                        <td class="mono">@(n.DiaChiIP ?? "—")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
