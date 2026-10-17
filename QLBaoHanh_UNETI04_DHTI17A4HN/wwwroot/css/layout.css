@@ -1,102 +1,209 @@
 /* layout.css - khung giao dien (sidebar + topbar + trang dang nhap)
    Tien to "qb-" de KHONG trung voi cac class co san trong site.css. */
 :root {
-    --qb-side-w: 250px;
-    --qb-side-bg: #1f2937;
-    --qb-accent: #4f8cff;
-    --qb-page-bg: #f4f6fb;
+  --qb-side-w: 250px;
+  --qb-side-bg: #1f2937;
+  --qb-accent: #4f8cff;
+  --qb-page-bg: #f4f6fb;
 }
 
-.qb-app { display: flex; min-height: 100vh; background: var(--qb-page-bg); }
+.qb-app {
+  display: flex;
+  min-height: 100vh;
+  background: var(--qb-page-bg);
+}
 
 /* ===== Sidebar ===== */
 .qb-sidebar {
-    width: var(--qb-side-w);
-    flex-shrink: 0;
-    background: var(--qb-side-bg);
-    color: #cbd5e1;
-    display: flex;
-    flex-direction: column;
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    z-index: 1040;
+  width: var(--qb-side-w);
+  flex-shrink: 0;
+  background: var(--qb-side-bg);
+  color: #cbd5e1;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 1040;
 }
 .qb-brand {
-    display: flex; align-items: center; gap: .6rem;
-    padding: 1.1rem 1.25rem;
-    color: #fff; font-weight: 700; font-size: 1.15rem; text-decoration: none;
-    border-bottom: 1px solid rgba(255,255,255,.08);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1.1rem 1.25rem;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.15rem;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
-.qb-brand i { color: var(--qb-accent); font-size: 1.4rem; }
+.qb-brand i {
+  color: var(--qb-accent);
+  font-size: 1.4rem;
+}
 
-.qb-nav { flex: 1; overflow-y: auto; padding-bottom: 1rem; }
+.qb-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 1rem;
+}
 .qb-group {
-    padding: 1rem 1.25rem .35rem;
-    font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; color: #64748b;
+  padding: 1rem 1.25rem 0.35rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
 }
 .qb-link {
-    display: flex; align-items: center; gap: .75rem;
-    padding: .55rem 1.25rem;
-    color: inherit; text-decoration: none;
-    border-left: 3px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 1.25rem;
+  color: inherit;
+  text-decoration: none;
+  border-left: 3px solid transparent;
 }
-.qb-link:hover { background: rgba(255,255,255,.06); color: #fff; }
+.qb-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
 .qb-link.active {
-    background: rgba(79,140,255,.15); color: #fff;
-    border-left-color: var(--qb-accent);
+  background: rgba(79, 140, 255, 0.15);
+  color: #fff;
+  border-left-color: var(--qb-accent);
 }
 
 .qb-user {
-    display: flex; align-items: center; gap: .6rem;
-    padding: .9rem 1.25rem;
-    border-top: 1px solid rgba(255,255,255,.08);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.9rem 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 .qb-avatar {
-    width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
-    background: var(--qb-accent); color: #fff;
-    display: grid; place-items: center; font-weight: 600; font-size: .85rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--qb-accent);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 600;
+  font-size: 0.85rem;
 }
-.qb-user-info { flex: 1; min-width: 0; line-height: 1.25; }
-.qb-user-info .name { color: #fff; font-size: .9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.qb-user-info .role { font-size: .75rem; color: #94a3b8; }
-.qb-logout { background: none; border: 0; color: #94a3b8; font-size: 1.2rem; padding: 0; }
-.qb-logout:hover { color: #fff; }
+.qb-user-info {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.25;
+}
+.qb-user-info .name {
+  color: #fff;
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.qb-user-info .role {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+.qb-logout {
+  background: none;
+  border: 0;
+  color: #94a3b8;
+  font-size: 1.2rem;
+  padding: 0;
+}
+.qb-logout:hover {
+  color: #fff;
+}
 
 /* ===== Vung noi dung ===== */
-.qb-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.qb-topbar {
-    background: #fff; border-bottom: 1px solid #e5e7eb;
-    padding: .8rem 1.5rem;
-    display: flex; align-items: center; gap: .75rem;
+.qb-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
-.qb-topbar h1 { margin: 0; font-size: 1.25rem; font-weight: 600; }
-.qb-toggle { display: none; background: none; border: 0; font-size: 1.5rem; line-height: 1; padding: 0; }
-.qb-content { padding: 1.5rem; flex: 1; }
-.qb-backdrop { display: none; }
+.qb-topbar {
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0.8rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.qb-topbar h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+.qb-toggle {
+  display: none;
+  background: none;
+  border: 0;
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: 0;
+}
+.qb-content {
+  padding: 1.5rem;
+  flex: 1;
+}
+.qb-backdrop {
+  display: none;
+}
 
 /* ===== Man hinh nho: sidebar thanh drawer ===== */
 @media (max-width: 767.98px) {
-    .qb-sidebar {
-        position: fixed; left: 0; top: 0;
-        transform: translateX(-100%);
-        transition: transform .2s ease-out;
-    }
-    .qb-sidebar.is-open { transform: none; box-shadow: 0 0 30px rgba(0,0,0,.35); }
-    .qb-toggle { display: inline-block; }
-    .qb-backdrop.is-open {
-        display: block; position: fixed; inset: 0;
-        background: rgba(15,23,42,.5); z-index: 1030;
-    }
-    .qb-topbar { padding: .8rem 1rem; }
-    .qb-content { padding: 1rem; }
+  .qb-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease-out;
+  }
+  .qb-sidebar.is-open {
+    transform: none;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.35);
+  }
+  .qb-toggle {
+    display: inline-block;
+  }
+  .qb-backdrop.is-open {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    z-index: 1030;
+  }
+  .qb-topbar {
+    padding: 0.8rem 1rem;
+  }
+  .qb-content {
+    padding: 1rem;
+  }
 }
 
 /* ===== Trang dang nhap / loi (khong sidebar) ===== */
 .qb-auth {
-    min-height: 100vh; display: flex; align-items: center; justify-content: center;
-    background: var(--qb-page-bg); padding: 1rem;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--qb-page-bg);
+  padding: 1rem;
 }
-.qb-auth-card { width: 100%; max-width: 420px; }
-.qb-auth-brand { text-align: center; margin-bottom: 1.25rem; }
-.qb-auth-brand i { font-size: 2.5rem; color: var(--qb-accent); }
+.qb-auth-card {
+  width: 100%;
+  max-width: 420px;
+}
+.qb-auth-brand {
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+.qb-auth-brand i {
+  font-size: 2.5rem;
+  color: var(--qb-accent);
+}
