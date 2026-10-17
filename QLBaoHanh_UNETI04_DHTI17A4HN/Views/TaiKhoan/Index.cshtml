@@ -1,5 +1,150 @@
-﻿@{
+@*
+   Họ và tên: Vân
+   Mã sinh viên: 23103100203
+   Nội dung thực hiện: Danh sách tài khoản: tìm kiếm, lọc vai trò/trạng thái, khóa/mở khóa, xóa an toàn (Admin).
+*@
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model IEnumerable<TaiKhoan>
+@{
     ViewData["Title"] = "Tài khoản";
+    var tuKhoa = ViewBag.TuKhoa as string;
+    var vaiTroLoc = ViewBag.VaiTro as VaiTroEnum?;
+    var trangThaiLoc = ViewBag.TrangThai as bool?;
+    var maDangNhap = ViewBag.MaDangNhap as int?;
+    var coLoc = !string.IsNullOrWhiteSpace(tuKhoa) || vaiTroLoc.HasValue || trangThaiLoc.HasValue;
+    var bayGio = DateTime.Now;
 }
 
-<p class="text-muted">Trang Tài khoản đang được xây dựng.</p>
+<div class="page-header">
+    <div>
+        <h1>Quản lý tài khoản</h1>
+        <p>Tạo, sửa, khóa/mở khóa tài khoản và phân vai trò Quản trị viên, Nhân viên, Khách hàng.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-primary" asp-action="Create"><i class="bi bi-plus-lg"></i> Thêm tài khoản</a>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="search">
+        <label class="form-label" for="tuKhoa">Tìm kiếm</label>
+        <input id="tuKhoa" name="tuKhoa" value="@tuKhoa" class="form-control" placeholder="Tên đăng nhập, họ tên hoặc email" />
+    </div>
+    <div>
+        <label class="form-label" for="vaiTro">Vai trò</label>
+        <select id="vaiTro" name="vaiTro" class="form-select">
+            <option value="">Tất cả</option>
+            @foreach (var v in Enum.GetValues<VaiTroEnum>())
+            {
+                <option value="@v" selected="@(vaiTroLoc == v)">@UiHelper.Badge(v).Text</option>
+            }
+        </select>
+    </div>
+    <div>
+        <label class="form-label" for="trangThai">Trạng thái</label>
+        <select id="trangThai" name="trangThai" class="form-select">
+            <option value="">Tất cả</option>
+            <option value="true" selected="@(trangThaiLoc == true)">Hoạt động</option>
+            <option value="false" selected="@(trangThaiLoc == false)">Bị khóa</option>
+        </select>
+    </div>
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+        @if (coLoc)
+        {
+            <a class="btn btn-outline-secondary" asp-action="Index">Xóa lọc</a>
+        }
+    </div>
+</form>
+
+<div class="table-card">
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <i class="bi bi-person-lock" style="font-size:2rem"></i>
+            @if (coLoc)
+            {
+                <h3>Không có tài khoản phù hợp</h3>
+                <p>Thử đổi từ khóa hoặc bỏ bớt điều kiện lọc.</p>
+            }
+            else
+            {
+                <h3>Chưa có tài khoản nào</h3>
+                <p>Bấm "Thêm tài khoản" để tạo tài khoản đầu tiên.</p>
+            }
+        </div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Tên đăng nhập</th>
+                    <th>Họ tên</th>
+                    <th>Vai trò</th>
+                    <th>Trạng thái</th>
+                    <th>Đăng nhập cuối</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var t in Model)
+                {
+                    var laMinh = maDangNhap == t.MaTaiKhoan;
+                    var tieuDeKhoa = t.TrangThai ? "Khóa tài khoản" : "Mở khóa tài khoản";
+                    var noiDungKhoa = t.TrangThai
+                        ? "Khóa tài khoản " + t.TenDangNhap + "? Người này sẽ không đăng nhập được nữa."
+                        : "Mở khóa tài khoản " + t.TenDangNhap + "?";
+                    var nutKhoa = t.TrangThai ? "Khóa" : "Mở khóa";
+                    <tr class="@(t.TrangThai ? "" : "is-muted")">
+                        <td>
+                            <div class="cell-title">@t.TenDangNhap @if (laMinh) { <span class="text-caption">(bạn)</span> }</div>
+                            <div class="cell-sub">@t.Email</div>
+                        </td>
+                        <td>@t.HoTen</td>
+                        <td><partial name="_StatusBadge" model="UiHelper.Badge(t.VaiTro)" /></td>
+                        <td>
+                            <partial name="_StatusBadge" model="UiHelper.BadgeHoatDong(t.TrangThai, true)" />
+                            @if (t.TrangThai && t.KhoaDenNgay.HasValue && t.KhoaDenNgay.Value > bayGio)
+                            {
+                                <span class="badge-note is-warning">Khóa tạm đến @t.KhoaDenNgay.Value.ToString("HH:mm dd/MM")</span>
+                            }
+                        </td>
+                        <td>@UiHelper.NgayGio(t.LanDangNhapCuoi)</td>
+                        <td>
+                            <div class="row-actions">
+                                <a class="btn btn-ghost btn-icon" asp-action="Details" asp-route-id="@t.MaTaiKhoan" title="Xem chi tiết"><i class="bi bi-eye"></i></a>
+                                <a class="btn btn-ghost btn-icon" asp-action="Edit" asp-route-id="@t.MaTaiKhoan" title="Sửa"><i class="bi bi-pencil"></i></a>
+                                @if (!laMinh)
+                                {
+                                    <button type="button" class="btn btn-ghost btn-icon @(t.TrangThai ? "is-danger" : "")"
+                                            title="@tieuDeKhoa"
+                                            data-bs-toggle="modal" data-bs-target="#qbXacNhan"
+                                            data-action="@Url.Action("DoiTrangThai", new { id = t.MaTaiKhoan })"
+                                            data-title="@tieuDeKhoa"
+                                            data-message="@noiDungKhoa"
+                                            data-ok="@nutKhoa">
+                                        <i class="bi @(t.TrangThai ? "bi-lock" : "bi-unlock")"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-ghost btn-icon is-danger" title="Xóa"
+                                            data-bs-toggle="modal" data-bs-target="#qbXacNhan"
+                                            data-action="@Url.Action("Xoa", new { id = t.MaTaiKhoan })"
+                                            data-title="Xóa tài khoản"
+                                            data-message="@("Xóa vĩnh viễn tài khoản " + t.TenDangNhap + "? Chỉ xóa được khi tài khoản chưa có dữ liệu liên quan.")"
+                                            data-ok="Xóa">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="table-footer">
+            <span>Tổng cộng @Model.Count() tài khoản</span>
+        </div>
+    }
+</div>
+
+<partial name="_XacNhanModal" />

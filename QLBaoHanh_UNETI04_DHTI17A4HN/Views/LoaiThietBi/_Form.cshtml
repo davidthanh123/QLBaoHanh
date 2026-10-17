@@ -1,0 +1,54 @@
+@*
+   Họ và tên: Vân
+   Mã sinh viên: 23103100203
+   Nội dung thực hiện: Form dùng chung cho Thêm và Sửa loại thiết bị.
+*@
+@model LoaiThietBi
+@{
+    var laSua = Model.MaLoai > 0;
+}
+
+<form method="post" action="@(laSua ? Url.Action("Edit", new { id = Model.MaLoai }) : Url.Action("Create"))">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="MaLoai" />
+    <div asp-validation-summary="ModelOnly"></div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="TenLoai" class="form-label required"></label>
+                    <input asp-for="TenLoai" class="form-control" />
+                    <span asp-validation-for="TenLoai"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="HangSanXuat" class="form-label required"></label>
+                    <input asp-for="HangSanXuat" class="form-control" />
+                    <span asp-validation-for="HangSanXuat"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="ThoiHanBaoHanhMacDinh" class="form-label required"></label>
+                    <input asp-for="ThoiHanBaoHanhMacDinh" class="form-control" type="number" min="0" max="120" />
+                    <div class="form-text">Từ 0 đến 120 tháng. Dùng làm gợi ý hạn bảo hành khi thêm thiết bị.</div>
+                    <span asp-validation-for="ThoiHanBaoHanhMacDinh"></span>
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <div class="form-check">
+                        <input asp-for="TrangThai" class="form-check-input" />
+                        <label asp-for="TrangThai" class="form-check-label">Đang sử dụng (bỏ chọn để ngừng sử dụng)</label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label asp-for="MoTa" class="form-label"></label>
+                    <textarea asp-for="MoTa" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="MoTa"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <a class="btn btn-outline-secondary" asp-action="Index">Hủy</a>
+        <button type="submit" class="btn btn-primary">@(laSua ? "Lưu thay đổi" : "Lưu loại thiết bị")</button>
+    </div>
+</form>
