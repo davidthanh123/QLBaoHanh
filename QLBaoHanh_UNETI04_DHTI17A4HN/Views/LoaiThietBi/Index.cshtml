@@ -1,5 +1,129 @@
-﻿@{
+@*
+   Họ và tên: Vân
+   Mã sinh viên: 23103100203
+   Nội dung thực hiện: Danh sách loại thiết bị: tìm kiếm, lọc trạng thái, ngừng sử dụng, xóa có kiểm soát (Admin).
+*@
+@model IEnumerable<LoaiThietBiDongViewModel>
+@using QLBaoHanh_UNETI04_DHTI17A4HN.ViewModels
+@{
     ViewData["Title"] = "Loại thiết bị";
+    var tuKhoa = ViewBag.TuKhoa as string;
+    var trangThaiLoc = ViewBag.TrangThai as bool?;
+    var coLoc = !string.IsNullOrWhiteSpace(tuKhoa) || trangThaiLoc.HasValue;
 }
 
-<p class="text-muted">Trang Loại thiết bị đang được xây dựng.</p>
+<div class="page-header">
+    <div>
+        <h1>Loại thiết bị</h1>
+        <p>Danh mục loại thiết bị, hãng sản xuất và thời hạn bảo hành mặc định.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-primary" asp-action="Create"><i class="bi bi-plus-lg"></i> Thêm loại thiết bị</a>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="search">
+        <label class="form-label" for="tuKhoa">Tìm kiếm</label>
+        <input id="tuKhoa" name="tuKhoa" value="@tuKhoa" class="form-control" placeholder="Tên loại hoặc hãng sản xuất" />
+    </div>
+    <div>
+        <label class="form-label" for="trangThai">Trạng thái</label>
+        <select id="trangThai" name="trangThai" class="form-select">
+            <option value="">Tất cả</option>
+            <option value="true" selected="@(trangThaiLoc == true)">Hoạt động</option>
+            <option value="false" selected="@(trangThaiLoc == false)">Ngừng hoạt động</option>
+        </select>
+    </div>
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+        @if (coLoc)
+        {
+            <a class="btn btn-outline-secondary" asp-action="Index">Xóa lọc</a>
+        }
+    </div>
+</form>
+
+<div class="table-card">
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <i class="bi bi-tags" style="font-size:2rem"></i>
+            @if (coLoc)
+            {
+                <h3>Không có loại thiết bị phù hợp</h3>
+                <p>Thử đổi từ khóa hoặc bỏ bớt điều kiện lọc.</p>
+            }
+            else
+            {
+                <h3>Chưa có loại thiết bị nào</h3>
+                <p>Bấm "Thêm loại thiết bị" để tạo loại đầu tiên.</p>
+            }
+        </div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Tên loại</th>
+                    <th>Hãng sản xuất</th>
+                    <th class="num">Bảo hành mặc định</th>
+                    <th class="num">Số thiết bị</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var d in Model)
+                {
+                    var l = d.Loai;
+                    var tieuDeDoi = l.TrangThai ? "Ngừng sử dụng" : "Sử dụng lại";
+                    var noiDungDoi = l.TrangThai
+                        ? "Ngừng sử dụng loại thiết bị " + l.TenLoai + "?"
+                        : "Cho phép sử dụng lại loại thiết bị " + l.TenLoai + "?";
+                    <tr class="@(l.TrangThai ? "" : "is-muted")">
+                        <td>
+                            <div class="cell-title">@l.TenLoai</div>
+                            @if (!string.IsNullOrEmpty(l.MoTa))
+                            {
+                                <div class="cell-sub">@l.MoTa</div>
+                            }
+                        </td>
+                        <td>@l.HangSanXuat</td>
+                        <td class="num">@l.ThoiHanBaoHanhMacDinh tháng</td>
+                        <td class="num">@d.SoThietBi</td>
+                        <td><partial name="_StatusBadge" model="UiHelper.BadgeHoatDong(l.TrangThai)" /></td>
+                        <td>
+                            <div class="row-actions">
+                                <a class="btn btn-ghost btn-icon" asp-action="Details" asp-route-id="@l.MaLoai" title="Xem chi tiết"><i class="bi bi-eye"></i></a>
+                                <a class="btn btn-ghost btn-icon" asp-action="Edit" asp-route-id="@l.MaLoai" title="Sửa"><i class="bi bi-pencil"></i></a>
+                                <button type="button" class="btn btn-ghost btn-icon" title="@tieuDeDoi"
+                                        data-bs-toggle="modal" data-bs-target="#qbXacNhan"
+                                        data-action="@Url.Action("DoiTrangThai", new { id = l.MaLoai })"
+                                        data-title="@tieuDeDoi"
+                                        data-message="@noiDungDoi"
+                                        data-ok="@tieuDeDoi">
+                                    <i class="bi @(l.TrangThai ? "bi-pause-circle" : "bi-play-circle")"></i>
+                                </button>
+                                <button type="button" class="btn btn-ghost btn-icon is-danger" title="Xóa"
+                                        data-bs-toggle="modal" data-bs-target="#qbXacNhan"
+                                        data-action="@Url.Action("Xoa", new { id = l.MaLoai })"
+                                        data-title="Xóa loại thiết bị"
+                                        data-message="@("Xóa loại thiết bị " + l.TenLoai + "? Loại đã có thiết bị sử dụng sẽ không xóa được.")"
+                                        data-ok="Xóa">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="table-footer">
+            <span>Tổng cộng @Model.Count() loại thiết bị</span>
+        </div>
+    }
+</div>
+
+<partial name="_XacNhanModal" />

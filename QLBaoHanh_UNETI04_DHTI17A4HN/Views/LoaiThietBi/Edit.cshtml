@@ -1,0 +1,22 @@
+@*
+   Họ và tên: Vân
+   Mã sinh viên: 23103100203
+   Nội dung thực hiện: Giao diện Sửa loại thiết bị.
+*@
+@model LoaiThietBi
+@{
+    ViewData["Title"] = "Sửa loại thiết bị";
+}
+
+<div class="page-header">
+    <div>
+        <h1>Sửa loại thiết bị</h1>
+        <p>Thay đổi không ảnh hưởng hạn bảo hành của thiết bị đã thêm trước đó.</p>
+    </div>
+</div>
+
+<partial name="_Form" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
