@@ -1,13 +1,12 @@
-@using System.Security.Claims
 @{
     var ctrl = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
 
-    // Đặt = false khi đã làm xong đăng nhập. Lúc đó chưa đăng nhập sẽ không thấy menu nào.
-    const bool xemTruoc = true;
-
-    var daDangNhap = User.Identity?.IsAuthenticated ?? false;
-    var vaiTro = User.FindFirst(ClaimTypes.Role)?.Value ?? (xemTruoc ? "Admin" : "");
-    var hoTen = User.FindFirst("HoTen")?.Value ?? User.Identity?.Name ?? (xemTruoc ? "Xem trước" : "Khách");
+    // Thông tin đăng nhập lấy từ Session (Module 1 - TaiKhoanController.DangNhap ghi vào)
+    var daDangNhap = Context.Session.DaDangNhap();
+    var vaiTroEnum = Context.Session.LayVaiTro();
+    var vaiTro = vaiTroEnum?.ToString() ?? "";
+    var vaiTroNhan = vaiTroEnum.HasValue ? UiHelper.Badge(vaiTroEnum.Value).Text : "";
+    var hoTen = Context.Session.LayHoTen() ?? "Khách";
 
     // Các nhóm vai trò (phải trùng tên trong VaiTroEnum)
     var tatCa = new[] { "Admin", "NhanVien", "KhachHang" };
@@ -59,7 +58,7 @@
         <span class="qb-avatar">@UiHelper.VietTat(hoTen)</span>
         <div class="qb-user-info">
             <div class="name">@hoTen</div>
-            <div class="role">@vaiTro</div>
+            <div class="role">@vaiTroNhan</div>
         </div>
         @if (daDangNhap)
         {

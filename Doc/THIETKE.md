@@ -12,13 +12,13 @@ Hệ thống Quản lý Bảo hành và Sửa chữa Thiết bị (RepairPro) �
 
 12 bảng chia 3 nhóm: 7 bảng bắt buộc theo mục 10 của đề, 2 bảng bổ sung phục vụ nghiệp vụ, 3 bảng nâng cao (mục 19, không làm vẫn đủ 5 Module).
 
-| Module | Người phụ trách | Bảng bắt buộc (đề mục 10)      | Bảng bổ sung / nâng cao                       |
-| ------ | --------------- | ------------------------------ | --------------------------------------------- |
-| 1      | Vân             | `TaiKhoan`, `LoaiThietBi`      | `NhatKyDangNhap` (nâng cao)                   |
-| 2      | Hoàng Thành     | `ThietBi`                      | `TepDinhKem` (nâng cao, dùng chung)           |
-| 3      | David           | `KhachHang`, `PhieuSuaChua`    | —                                             |
+| Module | Người phụ trách | Bảng bắt buộc (đề mục 10)                | Bảng bổ sung / nâng cao                         |
+| ------ | --------------- | ---------------------------------------- | ----------------------------------------------- |
+| 1      | Vân             | `TaiKhoan`, `LoaiThietBi`                | `NhatKyDangNhap` (nâng cao)                     |
+| 2      | Hoàng Thành     | `ThietBi`                                | `TepDinhKem` (nâng cao, dùng chung)             |
+| 3      | David           | `KhachHang`, `PhieuSuaChua`              | —                                               |
 | 4      | Thảo            | — (xử lý trạng thái trên `PhieuSuaChua`) | `KyThuatVien`, `LichSuTrangThaiPhieu` (bổ sung) |
-| 5      | Vũ              | `LinhKien`, `ChiTietSuaChua`   | `ThongBao` (nâng cao)                         |
+| 5      | Vũ              | `LinhKien`, `ChiTietSuaChua`             | `ThongBao` (nâng cao)                           |
 
 Ghi chú:
 
@@ -46,17 +46,17 @@ Ghi chú:
 
 Mọi cột trạng thái/vai trò/mức độ là `enum` C# trong `Models/Enums/Enums.cs` (namespace `QLBaoHanh_UNETI04_DHTI17A4HN.Models.Enums`), lưu DB dạng `nvarchar` + CHECK, cấu hình EF Core bằng `.HasConversion<string>()`. Giá trị là ASCII không dấu; nhãn tiếng Việt chỉ xuất hiện khi hiển thị (qua `UiHelper`, xem GIAODIEN.md mục 4). Không dùng chuỗi tự do trong code (ví dụ không viết `"Chờ xử lý"`).
 
-| Enum                       | Giá trị                                          | Cột dùng                                  |
-| -------------------------- | ------------------------------------------------ | ----------------------------------------- |
-| `VaiTroEnum`               | Admin, NhanVien, KhachHang                       | `TaiKhoan.VaiTro`                         |
-| `LoaiKhachHangEnum`        | CaNhan, DoanhNghiep                              | `KhachHang.LoaiKhachHang`                 |
-| `TrangThaiThietBiEnum`     | KhaDung, DangSuaChua, KhongKhaDung               | `ThietBi.TrangThai`                       |
-| `TrangThaiPhieuEnum`       | ChoXuLy, DangXuLy, HoanThanh, Huy, TuChoi        | `PhieuSuaChua.TrangThai`, `LichSuTrangThaiPhieu.TrangThaiCu/Moi` |
-| `MucDoEnum`                | Thap, TrungBinh, Cao, KhanCap                    | `PhieuSuaChua.MucDo`                      |
-| `KetQuaDangNhapEnum`       | ThanhCong, SaiMatKhau, KhongTonTai, BiKhoa       | `NhatKyDangNhap.KetQua`                   |
-| `LoaiDoiTuongDinhKemEnum`  | ThietBi, PhieuSuaChua, ChiTietSuaChua            | `TepDinhKem.LoaiDoiTuong`                 |
-| `KenhThongBaoEnum`         | TrongHeThong, Email                              | `ThongBao.Kenh`                           |
-| `TrangThaiGuiThongBaoEnum` | ChoGui, DaGui, Loi                               | `ThongBao.TrangThai`                      |
+| Enum                       | Giá trị                                    | Cột dùng                                                         |
+| -------------------------- | ------------------------------------------ | ---------------------------------------------------------------- |
+| `VaiTroEnum`               | Admin, NhanVien, KhachHang                 | `TaiKhoan.VaiTro`                                                |
+| `LoaiKhachHangEnum`        | CaNhan, DoanhNghiep                        | `KhachHang.LoaiKhachHang`                                        |
+| `TrangThaiThietBiEnum`     | KhaDung, DangSuaChua, KhongKhaDung         | `ThietBi.TrangThai`                                              |
+| `TrangThaiPhieuEnum`       | ChoXuLy, DangXuLy, HoanThanh, Huy, TuChoi  | `PhieuSuaChua.TrangThai`, `LichSuTrangThaiPhieu.TrangThaiCu/Moi` |
+| `MucDoEnum`                | Thap, TrungBinh, Cao, KhanCap              | `PhieuSuaChua.MucDo`                                             |
+| `KetQuaDangNhapEnum`       | ThanhCong, SaiMatKhau, KhongTonTai, BiKhoa | `NhatKyDangNhap.KetQua`                                          |
+| `LoaiDoiTuongDinhKemEnum`  | ThietBi, PhieuSuaChua, ChiTietSuaChua      | `TepDinhKem.LoaiDoiTuong`                                        |
+| `KenhThongBaoEnum`         | TrongHeThong, Email                        | `ThongBao.Kenh`                                                  |
+| `TrangThaiGuiThongBaoEnum` | ChoGui, DaGui, Loi                         | `ThongBao.TrangThai`                                             |
 
 Các cột `TrangThai` kiểu `bit` (TaiKhoan, LoaiThietBi, KhachHang, KyThuatVien, LinhKien): `true` = hoạt động, `false` = khóa/ngừng.
 
@@ -64,14 +64,14 @@ Các cột `TrangThai` kiểu `bit` (TaiKhoan, LoaiThietBi, KhachHang, KyThuatVi
 
 Chỉ cho chuyển theo bảng dưới; mọi chuyển trạng thái đều ghi 1 dòng vào `LichSuTrangThaiPhieu`. Kiểm tra ở Controller, không chỉ ẩn nút trên View.
 
-| Từ          | Sang        | Ai được làm        | Điều kiện / việc hệ thống tự làm                                                   |
-| ----------- | ----------- | ------------------ | ---------------------------------------------------------------------------------- |
-| (tạo mới)   | `ChoXuLy`   | Khách hàng / NV    | Kiểm tra mục 2.5; `NgayTiepNhan` do hệ thống gán                                   |
-| `ChoXuLy`   | `DangXuLy`  | Nhân viên          | Gán `MaTaiKhoanTiepNhan`; thiết bị chuyển `DangSuaChua`                            |
-| `ChoXuLy`   | `Huy`       | Khách hàng (phiếu của mình) / NV | Bắt buộc `LyDoHuyTuChoi`                                           |
-| `ChoXuLy`   | `TuChoi`    | Nhân viên          | Bắt buộc `LyDoHuyTuChoi` (ví dụ không thuộc phạm vi bảo hành)                      |
-| `DangXuLy`  | `HoanThanh` | Nhân viên          | Đã có ít nhất 1 `ChiTietSuaChua`; hệ thống gán `NgayHoanThanh`; thiết bị về `KhaDung` |
-| `DangXuLy`  | `Huy`       | Nhân viên / Admin  | Bắt buộc `LyDoHuyTuChoi`; thiết bị về `KhaDung`                                    |
+| Từ         | Sang        | Ai được làm                      | Điều kiện / việc hệ thống tự làm                                                      |
+| ---------- | ----------- | -------------------------------- | ------------------------------------------------------------------------------------- |
+| (tạo mới)  | `ChoXuLy`   | Khách hàng / NV                  | Kiểm tra mục 2.5; `NgayTiepNhan` do hệ thống gán                                      |
+| `ChoXuLy`  | `DangXuLy`  | Nhân viên                        | Gán `MaTaiKhoanTiepNhan`; thiết bị chuyển `DangSuaChua`                               |
+| `ChoXuLy`  | `Huy`       | Khách hàng (phiếu của mình) / NV | Bắt buộc `LyDoHuyTuChoi`                                                              |
+| `ChoXuLy`  | `TuChoi`    | Nhân viên                        | Bắt buộc `LyDoHuyTuChoi` (ví dụ không thuộc phạm vi bảo hành)                         |
+| `DangXuLy` | `HoanThanh` | Nhân viên                        | Đã có ít nhất 1 `ChiTietSuaChua`; hệ thống gán `NgayHoanThanh`; thiết bị về `KhaDung` |
+| `DangXuLy` | `Huy`       | Nhân viên / Admin                | Bắt buộc `LyDoHuyTuChoi`; thiết bị về `KhaDung`                                       |
 
 `HoanThanh`, `Huy`, `TuChoi` là trạng thái cuối: không đổi tiếp, không xóa phiếu (đề mục 7.4).
 
@@ -103,29 +103,29 @@ Dùng `PasswordHasher<TaiKhoan>` của ASP.NET Core (không cài cả ASP.NET Co
 
 ## 3. Bảng ràng buộc bắt buộc (map vào Data Annotation + kiểm tra ở Controller)
 
-| Bảng                 | Ràng buộc                                                           | Nơi kiểm tra                                                         |
-| -------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| TaiKhoan             | `TenDangNhap` bắt buộc, không trùng                                 | `[Required]` + unique index + LINQ báo lỗi thân thiện                |
-| TaiKhoan             | `Email` đúng định dạng                                              | `[EmailAddress]` + CHECK                                             |
-| TaiKhoan             | Tài khoản `TrangThai = false` hoặc còn trong `KhoaDenNgay` không đăng nhập | Controller đăng nhập                                         |
-| LoaiThietBi          | `TenLoai` không trùng; `HangSanXuat` bắt buộc                       | `[Required]` + unique index + LINQ                                   |
-| LoaiThietBi          | `ThoiHanBaoHanhMacDinh` từ 0 đến 120 (tháng)                        | `[Range(0, 120)]` + CHECK                                            |
-| LoaiThietBi          | Không xóa khi đã có thiết bị tham chiếu                             | LINQ `Any()` + FK Restrict                                           |
-| ThietBi              | `SerialNumber` không trùng                                          | `[Required]` + unique index + LINQ                                   |
-| ThietBi              | `HanBaoHanh >= NgayMua`                                             | `IValidatableObject` hoặc Controller + CHECK                         |
-| ThietBi              | `GiaTri >= 0`                                                       | `[Range]` + CHECK                                                    |
-| KhachHang            | `CCCD` không trùng (nếu có); `SoDienThoai` chỉ gồm số/dấu `+`       | unique index có điều kiện; `[Phone]` + CHECK                         |
-| KhachHang            | `MaSoThue` chỉ dùng khi `LoaiKhachHang = DoanhNghiep`               | Controller + CHECK                                                   |
-| KhachHang            | Người dùng chỉ sửa hồ sơ của chính mình                             | Controller so `MaTaiKhoan` với Session                               |
-| PhieuSuaChua         | Điều kiện tạo phiếu và chống trùng                                  | LINQ ở Controller (mục 2.5)                                          |
-| PhieuSuaChua         | `Huy`/`TuChoi` bắt buộc `LyDoHuyTuChoi`; `HoanThanh` bắt buộc `NgayHoanThanh` | CHECK + Controller (hệ thống gán `NgayHoanThanh`)         |
-| PhieuSuaChua         | `HanDuKien >= ngày tiếp nhận`                                       | CHECK + Controller                                                   |
-| PhieuSuaChua         | Chỉ chuyển trạng thái theo luồng mục 2.4                            | Controller                                                           |
-| PhieuSuaChua         | Khách chỉ xem/hủy phiếu của mình (đổi mã trên URL không lộ dữ liệu) | Controller so `MaKhachHang` với Session                              |
-| ChiTietSuaChua       | `SoLuong > 0`, `DonGia >= 0`, `ThanhTien = SoLuong * DonGia`        | `[Range]` + CHECK; Controller gán `ThanhTien`                        |
-| ChiTietSuaChua       | Chỉ thêm/sửa khi phiếu đang `DangXuLy`                              | Controller                                                           |
-| ChiTietSuaChua       | `SoLuong <= LinhKien.SoLuongTon`; lưu xong thì trừ tồn kho (đề xuất) | LINQ ở Controller/Service, cảnh báo khi không đủ (đề mục 8.5)        |
-| LinhKien             | `TenLinhKien` không trùng; `DonGia >= 0`; `SoLuongTon >= 0`         | `[Required]` + unique index + `[Range]` + CHECK                      |
+| Bảng           | Ràng buộc                                                                     | Nơi kiểm tra                                                  |
+| -------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| TaiKhoan       | `TenDangNhap` bắt buộc, không trùng                                           | `[Required]` + unique index + LINQ báo lỗi thân thiện         |
+| TaiKhoan       | `Email` đúng định dạng                                                        | `[EmailAddress]` + CHECK                                      |
+| TaiKhoan       | Tài khoản `TrangThai = false` hoặc còn trong `KhoaDenNgay` không đăng nhập    | Controller đăng nhập                                          |
+| LoaiThietBi    | `TenLoai` không trùng; `HangSanXuat` bắt buộc                                 | `[Required]` + unique index + LINQ                            |
+| LoaiThietBi    | `ThoiHanBaoHanhMacDinh` từ 0 đến 120 (tháng)                                  | `[Range(0, 120)]` + CHECK                                     |
+| LoaiThietBi    | Không xóa khi đã có thiết bị tham chiếu                                       | LINQ `Any()` + FK Restrict                                    |
+| ThietBi        | `SerialNumber` không trùng                                                    | `[Required]` + unique index + LINQ                            |
+| ThietBi        | `HanBaoHanh >= NgayMua`                                                       | `IValidatableObject` hoặc Controller + CHECK                  |
+| ThietBi        | `GiaTri >= 0`                                                                 | `[Range]` + CHECK                                             |
+| KhachHang      | `CCCD` không trùng (nếu có); `SoDienThoai` chỉ gồm số/dấu `+`                 | unique index có điều kiện; `[Phone]` + CHECK                  |
+| KhachHang      | `MaSoThue` chỉ dùng khi `LoaiKhachHang = DoanhNghiep`                         | Controller + CHECK                                            |
+| KhachHang      | Người dùng chỉ sửa hồ sơ của chính mình                                       | Controller so `MaTaiKhoan` với Session                        |
+| PhieuSuaChua   | Điều kiện tạo phiếu và chống trùng                                            | LINQ ở Controller (mục 2.5)                                   |
+| PhieuSuaChua   | `Huy`/`TuChoi` bắt buộc `LyDoHuyTuChoi`; `HoanThanh` bắt buộc `NgayHoanThanh` | CHECK + Controller (hệ thống gán `NgayHoanThanh`)             |
+| PhieuSuaChua   | `HanDuKien >= ngày tiếp nhận`                                                 | CHECK + Controller                                            |
+| PhieuSuaChua   | Chỉ chuyển trạng thái theo luồng mục 2.4                                      | Controller                                                    |
+| PhieuSuaChua   | Khách chỉ xem/hủy phiếu của mình (đổi mã trên URL không lộ dữ liệu)           | Controller so `MaKhachHang` với Session                       |
+| ChiTietSuaChua | `SoLuong > 0`, `DonGia >= 0`, `ThanhTien = SoLuong * DonGia`                  | `[Range]` + CHECK; Controller gán `ThanhTien`                 |
+| ChiTietSuaChua | Chỉ thêm/sửa khi phiếu đang `DangXuLy`                                        | Controller                                                    |
+| ChiTietSuaChua | `SoLuong <= LinhKien.SoLuongTon`; lưu xong thì trừ tồn kho (đề xuất)          | LINQ ở Controller/Service, cảnh báo khi không đủ (đề mục 8.5) |
+| LinhKien       | `TenLinhKien` không trùng; `DonGia >= 0`; `SoLuongTon >= 0`                   | `[Required]` + unique index + `[Range]` + CHECK               |
 
 ## 4. Migration
 
@@ -152,7 +152,7 @@ Việc còn lại của nhóm:
 - [ ] Đưa Model, Enums, `AppDbContext`, `DbSeeder` vào `main` (trưởng nhóm).
 - [ ] Xóa Migration cũ và tạo lại `InitialCreate` theo mục 4.
 - [ ] Mỗi người điền comment đầu file (Họ và tên, Mã sinh viên) vào các Model mình phụ trách (README mục Quy ước code).
-- [ ] Module 1: `Program.cs` thêm `AddSession()` / `UseSession()` và băm mật khẩu bằng `PasswordHasher<TaiKhoan>` (sửa lại `TaoTaiKhoan` trong `DbSeeder`).
+- [x] Module 1: `Program.cs` thêm `AddSession()` / `UseSession()` và băm mật khẩu bằng `PasswordHasher<TaiKhoan>` (sửa lại `TaoTaiKhoan` trong `DbSeeder`). Controller dùng `[PhanQuyen(VaiTroEnum.Admin, ...)]` (Helpers/PhanQuyenAttribute.cs) và lấy người dùng bằng `HttpContext.Session.LayMaTaiKhoan()` / `LayVaiTro()` (Helpers/PhienDangNhap.cs).
 - [ ] Khi sửa Entity/enum: cập nhật cả 4 file trong `Doc/` cùng PR (quy tắc đầu file).
 
 ## 6. Dữ liệu mẫu

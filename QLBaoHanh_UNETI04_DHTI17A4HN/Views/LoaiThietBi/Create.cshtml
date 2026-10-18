@@ -1,0 +1,22 @@
+@*
+   Họ và tên: Vân
+   Mã sinh viên: 23103100203
+   Nội dung thực hiện: Giao diện Thêm loại thiết bị.
+*@
+@model LoaiThietBi
+@{
+    ViewData["Title"] = "Thêm loại thiết bị";
+}
+
+<div class="page-header">
+    <div>
+        <h1>Thêm loại thiết bị</h1>
+        <p>Tên loại không được trùng với loại đã có.</p>
+    </div>
+</div>
+
+<partial name="_Form" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
