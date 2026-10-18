@@ -21,7 +21,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Helpers
         string? Note = null,
         string NoteCss = "");
 
-    /// <summary>Icon (tên Material Symbols) + nhãn, dùng cho enum không có badge màu.</summary>
+    // Icon (tên Material Symbols) + nhãn, dùng cho enum không có badge màu.</summary>
     public readonly record struct IconLabel(string Icon, string Text);
 
     /// <summary>
@@ -33,13 +33,13 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Helpers
     {
         // NGƯỠNG CẢNH BÁO (đổi ở đây là đổi toàn hệ thống)
 
-        /// <summary>Còn bao nhiêu ngày bảo hành thì tính là "Sắp hết hạn".</summary>
+        // Còn bao nhiêu ngày bảo hành thì tính là "Sắp hết hạn".</summary>
         public const int NgayCanhBaoBaoHanh = 30;
 
-        /// <summary>Còn bao nhiêu ngày đến hạn dự kiến của phiếu thì tính là "Sắp đến hạn".</summary>
+        // Còn bao nhiêu ngày đến hạn dự kiến của phiếu thì tính là "Sắp đến hạn".</summary>
         public const int NgayCanhBaoHanDuKien = 2;
 
-        /// <summary>Tồn kho từ mức này trở xuống (và còn > 0) thì tính là "Sắp hết".</summary>
+        // Tồn kho từ mức này trở xuống (và còn > 0) thì tính là "Sắp hết".</summary>
         public const int SoLuongSapHet = 5;
 
         // ĐỊNH DẠNG
@@ -50,20 +50,20 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Helpers
             NumberDecimalSeparator = ",",
         };
 
-        /// <summary>1250000 -> "1.250.000 ₫"; null -> "—"</summary>
+        // 1250000 -> "1.250.000 ₫"; null -> "—"</summary>
         public static string Tien(decimal? value) =>
             value is null ? "—" : value.Value.ToString("N0", SoViet) + " ₫";
 
-        /// <summary>dd/MM/yyyy; null -> "—"</summary>
+        // dd/MM/yyyy; null -> "—"</summary>
         public static string Ngay(DateTime? value) => value?.ToString("dd/MM/yyyy") ?? "—";
 
-        /// <summary>dd/MM/yyyy HH:mm; null -> "—"</summary>
+        // dd/MM/yyyy HH:mm; null -> "—"</summary>
         public static string NgayGio(DateTime? value) => value?.ToString("dd/MM/yyyy HH:mm") ?? "—";
 
-        /// <summary>Mã hiển thị: Ma("PSC", 7) -> "PSC-0007" (PSC = phiếu sửa chữa, TB = thiết bị, KH = khách hàng, LK = linh kiện).</summary>
+        // Mã hiển thị: Ma("PSC", 7) -> "PSC-0007" (PSC = phiếu sửa chữa, TB = thiết bị, KH = khách hàng, LK = linh kiện).</summary>
         public static string Ma(string tienTo, int id) => $"{tienTo}-{id:D4}";
 
-        /// <summary>Chữ viết tắt cho avatar: "Nguyễn Quản Trị" -> "QT" (chữ cái đầu của 2 từ cuối).</summary>
+        // Chữ viết tắt cho avatar: "Nguyễn Quản Trị" -> "QT" (chữ cái đầu của 2 từ cuối).</summary>
         public static string VietTat(string? hoTen)
         {
             var tu = (hoTen ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -92,7 +92,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Helpers
             _ => new(v.ToString(), "is-muted"),
         };
 
-        /// <summary>Mức độ: thẻ vuông có thanh màu bên trái (Kind = "level").</summary>
+        // Mức độ: thẻ vuông có thanh màu bên trái (Kind = "level").</summary>
         public static BadgeInfo Badge(MucDoEnum v) => v switch
         {
             MucDoEnum.Thap => new("Thấp", "is-thap", "level"),
@@ -102,7 +102,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Helpers
             _ => new(v.ToString(), "is-thap", "level"),
         };
 
-        /// <summary>Vai trò: chip (Kind = "role").</summary>
+        // Vai trò: chip (Kind = "role").</summary>
         public static BadgeInfo Badge(VaiTroEnum v) => v switch
         {
             VaiTroEnum.Admin => new("Quản trị viên", "is-admin", "role"),
@@ -111,7 +111,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Helpers
             _ => new(v.ToString(), "is-khachhang", "role"),
         };
 
-        /// <summary>Loại khách hàng: chip (Kind = "role").</summary>
+        // Loại khách hàng: chip (Kind = "role").</summary>
         public static BadgeInfo Badge(LoaiKhachHangEnum v) => v switch
         {
             LoaiKhachHangEnum.CaNhan => new("Cá nhân", "is-canhan", "role"),
@@ -208,7 +208,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Helpers
             return new("Còn hạn", "is-success", Note: $"còn {soNgay} ngày");
         }
 
-        /// <summary>Tồn kho linh kiện: Còn hàng (xanh lá) · Sắp hết (≤ 5, vàng, kèm "còn N cái") · Hết hàng (đỏ).</summary>
+        // Tồn kho linh kiện: Còn hàng (xanh lá) · Sắp hết (≤ 5, vàng, kèm "còn N cái") · Hết hàng (đỏ).</summary>
         public static BadgeInfo TonKho(int soLuongTon)
         {
             if (soLuongTon <= 0)
@@ -222,10 +222,10 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Helpers
 
         // HÀNG BẢNG MỜ
 
-        /// <summary>Class cho &lt;tr&gt;: phiếu Đã hủy thì mờ cả hàng. Dùng: &lt;tr class="@UiHelper.HangMo(p.TrangThai)"&gt;</summary>
+        // Class cho &lt;tr&gt;: phiếu Đã hủy thì mờ cả hàng. Dùng: &lt;tr class="@UiHelper.HangMo(p.TrangThai)"&gt;</summary>
         public static string HangMo(TrangThaiPhieuEnum v) => v == TrangThaiPhieuEnum.Huy ? "is-muted" : "";
 
-        /// <summary>Thiết bị Không khả dụng thì mờ cả hàng (và ẩn nút "Tạo phiếu sửa chữa").</summary>
+        // Thiết bị Không khả dụng thì mờ cả hàng (và ẩn nút "Tạo phiếu sửa chữa").</summary>
         public static string HangMo(TrangThaiThietBiEnum v) => v == TrangThaiThietBiEnum.KhongKhaDung ? "is-muted" : "";
     }
 }

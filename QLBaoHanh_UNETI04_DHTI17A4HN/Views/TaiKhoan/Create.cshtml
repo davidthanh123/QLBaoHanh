@@ -1,0 +1,22 @@
+@*
+   Họ và tên: Vân
+   Mã sinh viên: 23103100203
+   Nội dung thực hiện: Giao diện Thêm tài khoản.
+*@
+@model TaiKhoanFormViewModel
+@{
+    ViewData["Title"] = "Thêm tài khoản";
+}
+
+<div class="page-header">
+    <div>
+        <h1>Thêm tài khoản</h1>
+        <p>Mật khẩu được mã hóa trước khi lưu vào cơ sở dữ liệu.</p>
+    </div>
+</div>
+
+<partial name="_Form" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

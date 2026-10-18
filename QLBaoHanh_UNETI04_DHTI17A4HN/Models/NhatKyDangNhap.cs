@@ -1,5 +1,5 @@
-// Họ và tên: ........................ (người phụ trách Module 1 điền)
-// Mã sinh viên: ........................
+// Họ và tên: Vân
+// Mã sinh viên: 23103100203
 // Nội dung thực hiện: Entity NhatKyDangNhap - nhật ký đăng nhập (nâng cao).
 
 using System.ComponentModel.DataAnnotations;
