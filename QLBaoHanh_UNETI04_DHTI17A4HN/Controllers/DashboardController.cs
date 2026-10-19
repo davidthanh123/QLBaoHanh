@@ -12,7 +12,6 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Controllers
         {
             _context = context;
         }
-
         public async Task<IActionResult> Index()
         {
             ViewBag.TongKhachHang =
