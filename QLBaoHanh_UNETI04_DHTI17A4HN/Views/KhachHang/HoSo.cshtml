@@ -1,0 +1,43 @@
+@model QLBaoHanh_UNETI04_DHTI17A4HN.ViewModels.HoSoKhachHangViewModel
+@using QLBaoHanh_UNETI04_DHTI17A4HN.Models.Enums
+@{
+    ViewData["Title"] = "Hồ sơ cá nhân";
+}
+<div class="row justify-content-center">
+    <div class="col-xl-9">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4 p-lg-5">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center" style="width:58px;height:58px"><i class="bi bi-person-vcard fs-3"></i></div>
+                    <div><h2 class="h4 mb-1">Thông tin cá nhân</h2><p class="text-secondary mb-0">Chỉ bạn mới có thể xem và cập nhật hồ sơ này.</p></div>
+                </div>
+                @if (Model.MaKhachHang == 0)
+                {
+                    <div class="alert alert-warning mb-0">Tài khoản hiện chưa được liên kết với hồ sơ khách hàng. Vui lòng liên hệ nhân viên để được hỗ trợ.</div>
+                }
+                else
+                {
+                    <form asp-action="HoSo" method="post">
+                        @Html.AntiForgeryToken()
+                        <input asp-for="MaKhachHang" type="hidden" />
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        <div class="row g-3">
+                            <div class="col-md-6"><label asp-for="HoTen" class="form-label"></label><input asp-for="HoTen" class="form-control" /><span asp-validation-for="HoTen" class="text-danger small"></span></div>
+                            <div class="col-md-6"><label asp-for="SoDienThoai" class="form-label"></label><input asp-for="SoDienThoai" class="form-control" /><span asp-validation-for="SoDienThoai" class="text-danger small"></span></div>
+                            <div class="col-md-6"><label asp-for="Email" class="form-label"></label><input asp-for="Email" class="form-control" /><span asp-validation-for="Email" class="text-danger small"></span></div>
+                            <div class="col-md-6"><label asp-for="CCCD" class="form-label"></label><input asp-for="CCCD" class="form-control" maxlength="12" /><span asp-validation-for="CCCD" class="text-danger small"></span></div>
+                            <div class="col-12"><label asp-for="DiaChi" class="form-label"></label><input asp-for="DiaChi" class="form-control" /><span asp-validation-for="DiaChi" class="text-danger small"></span></div>
+                            <div class="col-md-6"><label asp-for="LoaiKhachHang" class="form-label"></label><select asp-for="LoaiKhachHang" asp-items="Html.GetEnumSelectList<LoaiKhachHangEnum>()" class="form-select"></select></div>
+                            <div class="col-md-6"><label asp-for="MaSoThue" class="form-label"></label><input asp-for="MaSoThue" class="form-control" maxlength="14" placeholder="Dành cho khách hàng doanh nghiệp" /><span asp-validation-for="MaSoThue" class="text-danger small"></span></div>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <a asp-controller="PhieuSuaChua" asp-action="Index" class="btn btn-light">Phiếu sửa chữa của tôi</a>
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-check2-circle me-1"></i>Lưu thay đổi</button>
+                        </div>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }
