@@ -1,5 +1,210 @@
-﻿@{
-    ViewData["Title"] = "Thiết bị";
+﻿@*
+   Họ và tên: Đào Hoàng Thành
+   Mã sinh viên: 23103100223
+   Nội dung thực hiện: Module 2 - Danh sách thiết bị: tìm kiếm, lọc kết hợp, sắp xếp, phân trang.
+*@
+@model ThietBiIndexViewModel
+@using QLBaoHanh_UNETI04_DHTI17A4HN.ViewModels
+@{
+    var khach = Context.Session.LayVaiTro() == VaiTroEnum.KhachHang;
+    ViewData["Title"] = khach ? "Thiết bị của tôi" : "Thiết bị";
+    var f = Model.Filter;
 }
 
-<p class="text-muted">Trang Thiết bị đang được xây dựng.</p>
+<div class="page-header">
+    <div>
+        <h1>@ViewData["Title"]</h1>
+        <p>Tra cứu thiết bị, tình trạng bảo hành và trạng thái sử dụng.</p>
+    </div>
+    @if (!khach)
+    {
+        <div class="page-actions">
+            <a class="btn btn-primary" asp-action="Create"><i class="bi bi-plus-lg"></i> Thêm thiết bị</a>
+        </div>
+    }
+</div>
+
+<form method="get" asp-action="Index" class="filter-bar">
+    <div class="search">
+        <label class="form-label" for="Keyword">Tìm kiếm</label>
+        <input id="Keyword" name="Keyword" value="@f.Keyword" class="form-control"
+               placeholder="@(khach ? "Tên thiết bị hoặc serial" : "Tên thiết bị, serial hoặc tên khách hàng")" />
+    </div>
+    <div>
+        <label class="form-label" for="MaLoai">Loại thiết bị</label>
+        <select id="MaLoai" name="MaLoai" class="form-select">
+            <option value="">Tất cả</option>
+            @foreach (var l in Model.DsLoai)
+            {
+                <option value="@l.MaLoai" selected="@(f.MaLoai == l.MaLoai)">@l.TenLoai</option>
+            }
+        </select>
+    </div>
+    <div>
+        <label class="form-label" for="Hang">Hãng sản xuất</label>
+        <select id="Hang" name="Hang" class="form-select">
+            <option value="">Tất cả</option>
+            @foreach (var h in Model.DsHang)
+            {
+                <option value="@h" selected="@(f.Hang == h)">@h</option>
+            }
+        </select>
+    </div>
+    <div>
+        <label class="form-label" for="BaoHanh">Bảo hành</label>
+        <select id="BaoHanh" name="BaoHanh" class="form-select">
+            <option value="">Tất cả</option>
+            <option value="con" selected="@(f.BaoHanh == "con")">Còn bảo hành</option>
+            <option value="sap" selected="@(f.BaoHanh == "sap")">Sắp hết hạn (≤ 30 ngày)</option>
+            <option value="het" selected="@(f.BaoHanh == "het")">Hết bảo hành</option>
+        </select>
+    </div>
+    <div>
+        <label class="form-label" for="TrangThai">Trạng thái sửa chữa</label>
+        <select id="TrangThai" name="TrangThai" class="form-select">
+            <option value="">Tất cả</option>
+            <option value="KhaDung" selected="@(f.TrangThai == TrangThaiThietBiEnum.KhaDung)">Khả dụng</option>
+            <option value="DangSuaChua" selected="@(f.TrangThai == TrangThaiThietBiEnum.DangSuaChua)">Đang sửa chữa</option>
+            <option value="KhongKhaDung" selected="@(f.TrangThai == TrangThaiThietBiEnum.KhongKhaDung)">Không khả dụng</option>
+        </select>
+    </div>
+    <div>
+        <label class="form-label" for="GiaTu">Giá trị từ (₫)</label>
+        <input id="GiaTu" name="GiaTu" type="number" min="0" step="1000" class="form-control num"
+               value="@f.GiaTu?.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)" />
+    </div>
+    <div>
+        <label class="form-label" for="GiaDen">Giá trị đến (₫)</label>
+        <input id="GiaDen" name="GiaDen" type="number" min="0" step="1000" class="form-control num"
+               value="@f.GiaDen?.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)" />
+    </div>
+    <div>
+        <label class="form-label" for="Sort">Sắp xếp</label>
+        <select id="Sort" name="Sort" class="form-select">
+            <option value="">Mới thêm trước</option>
+            <option value="ten" selected="@(f.Sort == "ten")">Tên A → Z</option>
+            <option value="ten_desc" selected="@(f.Sort == "ten_desc")">Tên Z → A</option>
+            <option value="ngaymua" selected="@(f.Sort == "ngaymua")">Ngày mua tăng dần</option>
+            <option value="ngaymua_desc" selected="@(f.Sort == "ngaymua_desc")">Ngày mua giảm dần</option>
+            <option value="hanbh" selected="@(f.Sort == "hanbh")">Hạn bảo hành tăng dần</option>
+            <option value="hanbh_desc" selected="@(f.Sort == "hanbh_desc")">Hạn bảo hành giảm dần</option>
+            <option value="giatri" selected="@(f.Sort == "giatri")">Giá trị tăng dần</option>
+            <option value="giatri_desc" selected="@(f.Sort == "giatri_desc")">Giá trị giảm dần</option>
+        </select>
+    </div>
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+        @if (Model.CoLoc || !string.IsNullOrEmpty(f.Sort))
+        {
+            <a class="btn btn-outline-secondary" asp-action="Index">Xóa lọc</a>
+        }
+    </div>
+</form>
+
+<div class="table-card">
+    @if (Model.TotalItems == 0)
+    {
+        <div class="empty-state">
+            <i class="bi bi-pc-display" style="font-size:2rem"></i>
+            @if (Model.CoLoc)
+            {
+                <h3>Không có thiết bị phù hợp</h3>
+                <p>Thử đổi từ khóa hoặc bỏ bớt điều kiện lọc.</p>
+            }
+            else
+            {
+                <h3>Chưa có thiết bị nào</h3>
+                @if (!khach)
+                {
+                    <p>Bấm "Thêm thiết bị" để tạo thiết bị đầu tiên.</p>
+                }
+            }
+        </div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Thiết bị</th>
+                    <th>Loại / Hãng</th>
+                    @if (!khach)
+                    {
+                        <th>Khách hàng</th>
+                    }
+                    <th>Ngày mua</th>
+                    <th>Bảo hành</th>
+                    <th class="num">Giá trị</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var t in Model.Items)
+                {
+                    <tr class="@UiHelper.HangMo(t.TrangThai)">
+                        <td>
+                            <div class="cell-title">@t.TenThietBi</div>
+                            <div class="cell-sub mono">@t.SerialNumber</div>
+                        </td>
+                        <td>
+                            <div>@t.LoaiThietBi?.TenLoai</div>
+                            <div class="cell-sub">@t.LoaiThietBi?.HangSanXuat</div>
+                        </td>
+                        @if (!khach)
+                        {
+                            <td>
+                                <div class="cell-title">@t.KhachHang?.HoTen</div>
+                                <div class="cell-sub mono">@UiHelper.Ma("KH", t.MaKhachHang)</div>
+                            </td>
+                        }
+                        <td>@UiHelper.Ngay(t.NgayMua)</td>
+                        <td>
+                            <partial name="_StatusBadge" model="UiHelper.BaoHanh(t.HanBaoHanh)" />
+                            <div class="cell-sub">đến @UiHelper.Ngay(t.HanBaoHanh)</div>
+                        </td>
+                        <td class="num">@UiHelper.Tien(t.GiaTri)</td>
+                        <td><partial name="_StatusBadge" model="UiHelper.Badge(t.TrangThai)" /></td>
+                        <td>
+                            <div class="row-actions">
+                                <a class="btn btn-ghost btn-icon" asp-action="Details" asp-route-id="@t.MaThietBi" title="Xem chi tiết"><i class="bi bi-eye"></i></a>
+                                @if (!khach && t.TrangThai != TrangThaiThietBiEnum.KhongKhaDung)
+                                {
+                                    <a class="btn btn-ghost btn-icon" asp-action="Edit" asp-route-id="@t.MaThietBi" title="Sửa"><i class="bi bi-pencil"></i></a>
+                                }
+                                @if (khach && t.TrangThai == TrangThaiThietBiEnum.KhaDung)
+                                {
+                                    <a class="btn btn-accent btn-sm" asp-controller="PhieuSuaChua" asp-action="Create" asp-route-maThietBi="@t.MaThietBi">Tạo phiếu sửa chữa</a>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="table-footer">
+            <span>
+                Hiển thị @((f.Page - 1) * Model.PageSize + 1)–@(Math.Min(f.Page * Model.PageSize, Model.TotalItems))
+                / @Model.TotalItems thiết bị
+            </span>
+            @if (Model.TotalPages > 1)
+            {
+                <ul class="pagination mb-0">
+                    <li class="page-item @(f.Page == 1 ? "disabled" : "")">
+                        <a class="page-link" asp-action="Index" asp-all-route-data="Model.Route(f.Page - 1)">Trước</a>
+                    </li>
+                    @for (var p = 1; p <= Model.TotalPages; p++)
+                    {
+                        <li class="page-item @(p == f.Page ? "active" : "")">
+                            <a class="page-link" asp-action="Index" asp-all-route-data="Model.Route(p)">@p</a>
+                        </li>
+                    }
+                    <li class="page-item @(f.Page == Model.TotalPages ? "disabled" : "")">
+                        <a class="page-link" asp-action="Index" asp-all-route-data="Model.Route(f.Page + 1)">Sau</a>
+                    </li>
+                </ul>
+            }
+        </div>
+    }
+</div>
