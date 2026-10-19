@@ -1,0 +1,95 @@
+
+
+@model IEnumerable<QLBaoHanh_UNETI04_DHTI17A4HN.Models.ChiTietSuaChua>
+
+@{
+    ViewData["Title"] = "Chi tiết sửa chữa";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Danh sách chi tiết sửa chữa</h2>
+
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Thêm chi tiết sửa chữa
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Mã chi tiết</th>
+                            <th>Số lượng</th>
+                            <th>Đơn giá</th>
+                            <th>Thành tiền</th>
+                            <th>Kết quả chẩn đoán</th>
+                            <th>Ghi chú</th>
+                            <th>Phiếu sửa chữa</th>
+                            <th>Kỹ thuật viên</th>
+                            <th>Linh kiện</th>
+                            <th style="min-width: 220px; white-space: nowrap;">Thao tác</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.MaChiTiet</td>
+                                    <td>@item.SoLuong</td>
+                                    <td>@item.DonGia.ToString("N0") đ</td>
+                                    <td>@item.ThanhTien.ToString("N0") đ</td>
+                                    <td>@item.KetQuaChanDoan</td>
+                                    <td>@item.GhiChu</td>
+                                    <td>
+                                        @(item.PhieuSuaChua?.NoiDungLoi ?? "Không có")
+                                    </td>
+                                    <td>
+                                        @(item.KyThuatVien?.HoTen ?? "Chưa phân công")
+                                    </td>
+                                    <td>
+                                        @(item.LinhKien?.TenLinhKien ?? "Không sử dụng linh kiện")
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-nowrap align-items-center gap-1">
+                                            <a asp-action="Edit"
+                                            asp-route-id="@item.MaChiTiet"
+                                            class="btn btn-sm btn-warning">
+                                                Sửa
+                                            </a>
+
+                                            <a asp-action="Details"
+                                            asp-route-id="@item.MaChiTiet"
+                                            class="btn btn-sm btn-info text-white">
+                                                Chi tiết
+                                            </a>
+
+                                            <a asp-action="Delete"
+                                            asp-route-id="@item.MaChiTiet"
+                                            class="btn btn-sm btn-danger">
+                                                Xóa
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="10" class="text-center text-muted">
+                                    Chưa có dữ liệu chi tiết sửa chữa.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
