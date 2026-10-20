@@ -1,5 +1,120 @@
-﻿@{
-    ViewData["Title"] = "Phiếu sửa chữa";
+@* Họ và tên: [điền họ tên của bạn] *@
+@* Mã sinh viên: [điền mã sinh viên của bạn] *@
+@* Nội dung thực hiện: Module 4 - danh sách xử lý, tìm kiếm, lọc và phân trang phiếu. *@
+@model PhieuSuaChuaDanhSachViewModel
+@{
+    ViewData["Title"] = "Tiếp nhận và xử lý phiếu";
+    var loaiThietBis = ViewBag.LoaiThietBis as IEnumerable<LoaiThietBi> ?? Enumerable.Empty<LoaiThietBi>();
 }
 
-<p class="text-muted">Trang Phiếu sửa chữa đang được xây dựng.</p>
+<section class="container-fluid px-0">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="h4 mb-1">Phiếu cần xử lý</h2>
+            <p class="text-muted mb-0">Tìm kiếm, lọc và theo dõi tiến độ tiếp nhận sửa chữa.</p>
+        </div>
+        <span class="badge text-bg-secondary">@Model.TongSoPhieu phiếu</span>
+    </div>
+
+    <form asp-action="Index" method="get" class="card card-body mb-3">
+        <div class="row g-2 align-items-end">
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label" for="tuKhoa">Khách hàng / thiết bị</label>
+                <input class="form-control" id="tuKhoa" name="tuKhoa" value="@Model.TuKhoa" placeholder="Tên, số điện thoại, serial" />
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <label class="form-label" for="maLoai">Loại thiết bị</label>
+                <select class="form-select" id="maLoai" name="maLoai">
+                    <option value="">Tất cả loại</option>
+                    @foreach (var loai in loaiThietBis)
+                    {
+                        <option value="@loai.MaLoai" selected="@(Model.MaLoai == loai.MaLoai)">@loai.TenLoai</option>
+                    }
+                </select>
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <label class="form-label" for="trangThai">Trạng thái</label>
+                <select class="form-select" id="trangThai" name="trangThai">
+                    <option value="">Tất cả trạng thái</option>
+                    @foreach (var state in Enum.GetValues<TrangThaiPhieuEnum>())
+                    {
+                        <option value="@state" selected="@(Model.TrangThai == state)">@UiHelper.Badge(state).Text</option>
+                    }
+                </select>
+            </div>
+            <div class="col-lg-1 col-md-3">
+                <label class="form-label" for="tuNgay">Từ ngày</label>
+                <input class="form-control" type="date" id="tuNgay" name="tuNgay" value="@Model.TuNgay?.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-lg-1 col-md-3">
+                <label class="form-label" for="denNgay">Đến ngày</label>
+                <input class="form-control" type="date" id="denNgay" name="denNgay" value="@Model.DenNgay?.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <label class="form-label" for="sapXep">Sắp xếp</label>
+                <select class="form-select" id="sapXep" name="sapXep">
+                    <option value="moi-nhat" selected="@(Model.SapXep == "moi-nhat")">Ngày mới nhất</option>
+                    <option value="cu-nhat" selected="@(Model.SapXep == "cu-nhat")">Ngày cũ nhất</option>
+                    <option value="ten-khach" selected="@(Model.SapXep == "ten-khach")">Tên khách hàng</option>
+                    <option value="ten-thiet-bi" selected="@(Model.SapXep == "ten-thiet-bi")">Tên thiết bị</option>
+                </select>
+            </div>
+            <div class="col-12 d-flex gap-2 mt-2">
+                <button class="btn btn-primary" type="submit"><i class="bi bi-search me-1"></i>Lọc phiếu</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Xóa bộ lọc</a>
+            </div>
+        </div>
+    </form>
+
+    <div class="table-responsive card">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Mã phiếu</th><th>Khách hàng</th><th>Thiết bị</th><th>Loại</th>
+                    <th>Ngày tiếp nhận</th><th>Trạng thái</th><th></th>
+                </tr>
+            </thead>
+            <tbody>
+            @if (Model.PhieuSuaChuas.Count == 0)
+            {
+                <tr><td colspan="7" class="text-center text-muted py-4">Không tìm thấy phiếu phù hợp.</td></tr>
+            }
+            else
+            {
+                @foreach (var p in Model.PhieuSuaChuas)
+                {
+                    <tr>
+                        <td class="fw-semibold">@UiHelper.Ma("PSC", p.MaPhieu)</td>
+                        <td>@p.KhachHang?.HoTen<br /><small class="text-muted">@p.KhachHang?.SoDienThoai</small></td>
+                        <td>@p.ThietBi?.TenThietBi<br /><small class="text-muted">SN: @p.ThietBi?.SerialNumber</small></td>
+                        <td>@p.ThietBi?.LoaiThietBi?.TenLoai</td>
+                        <td>@UiHelper.NgayGio(p.NgayTiepNhan)</td>
+                        <td><partial name="_StatusBadge" model="UiHelper.Badge(p.TrangThai)" /></td>
+                        <td class="text-end"><a asp-action="Details" asp-route-id="@p.MaPhieu" class="btn btn-sm btn-outline-primary">Chi tiết</a></td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.SoTrang > 1)
+    {
+        <nav class="mt-3" aria-label="Phân trang phiếu sửa chữa">
+            <ul class="pagination justify-content-end">
+                <li class="page-item @(Model.Trang <= 1 ? "disabled" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-trang="@(Model.Trang - 1)" asp-route-tuKhoa="@Model.TuKhoa" asp-route-maLoai="@Model.MaLoai" asp-route-trangThai="@Model.TrangThai" asp-route-tuNgay="@Model.TuNgay?.ToString("yyyy-MM-dd")" asp-route-denNgay="@Model.DenNgay?.ToString("yyyy-MM-dd")" asp-route-sapXep="@Model.SapXep">Trước</a>
+                </li>
+                @for (var i = 1; i <= Model.SoTrang; i++)
+                {
+                    <li class="page-item @(i == Model.Trang ? "active" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-trang="@i" asp-route-tuKhoa="@Model.TuKhoa" asp-route-maLoai="@Model.MaLoai" asp-route-trangThai="@Model.TrangThai" asp-route-tuNgay="@Model.TuNgay?.ToString("yyyy-MM-dd")" asp-route-denNgay="@Model.DenNgay?.ToString("yyyy-MM-dd")" asp-route-sapXep="@Model.SapXep">@i</a>
+                    </li>
+                }
+                <li class="page-item @(Model.Trang >= Model.SoTrang ? "disabled" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-trang="@(Model.Trang + 1)" asp-route-tuKhoa="@Model.TuKhoa" asp-route-maLoai="@Model.MaLoai" asp-route-trangThai="@Model.TrangThai" asp-route-tuNgay="@Model.TuNgay?.ToString("yyyy-MM-dd")" asp-route-denNgay="@Model.DenNgay?.ToString("yyyy-MM-dd")" asp-route-sapXep="@Model.SapXep">Sau</a>
+                </li>
+            </ul>
+        </nav>
+    }
+</section>
