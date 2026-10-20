@@ -1,5 +1,38 @@
-﻿@{
+﻿@model IEnumerable<QLBaoHanh_UNETI04_DHTI17A4HN.Models.PhieuSuaChua>
+@using QLBaoHanh_UNETI04_DHTI17A4HN.Helpers
+@using QLBaoHanh_UNETI04_DHTI17A4HN.Models.Enums
+@{
     ViewData["Title"] = "Phiếu sửa chữa";
+    var laKhachHang = Context.Session.LayVaiTro() == VaiTroEnum.KhachHang;
 }
-
-<p class="text-muted">Trang Phiếu sửa chữa đang được xây dựng.</p>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div><h2 class="h4 mb-1">@(laKhachHang ? "Phiếu sửa chữa của tôi" : "Danh sách phiếu sửa chữa")</h2><div class="text-secondary">Theo dõi trạng thái tiếp nhận và xử lý thiết bị</div></div>
+    @if (laKhachHang) { <a asp-action="Create" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Tạo phiếu sửa chữa</a> }
+</div>
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light"><tr><th>Mã phiếu</th>@if (!laKhachHang) { <th>Khách hàng</th> }<th>Thiết bị</th><th>Nội dung lỗi</th><th>Ngày tiếp nhận</th><th>Mức độ</th><th>Trạng thái</th><th>Hạn dự kiến</th>@if (laKhachHang) { <th></th> }</tr></thead>
+            <tbody>
+            @foreach (var p in Model)
+            {
+                var badge = UiHelper.Badge(p.TrangThai);
+                <tr class="@UiHelper.HangMo(p.TrangThai)">
+                    <td class="fw-semibold">@UiHelper.Ma("PSC", p.MaPhieu)</td>
+                    @if (!laKhachHang) { <td>@p.KhachHang?.HoTen</td> }
+                    <td><div class="fw-semibold">@p.ThietBi?.TenThietBi</div><small class="text-secondary">@(p.ThietBi?.SerialNumber ?? "")</small></td>
+                    <td style="min-width:180px;max-width:280px"><span class="text-break">@p.NoiDungLoi</span>@if (!string.IsNullOrWhiteSpace(p.LyDoHuyTuChoi)) { <div class="small text-danger mt-1">Lý do: @p.LyDoHuyTuChoi</div> }</td>
+                    <td>@UiHelper.NgayGio(p.NgayTiepNhan)</td>
+                    <td><span class="badge text-bg-light border">@UiHelper.Badge(p.MucDo).Text</span></td>
+                    <td><span class="badge @(badge.Css.Contains("success") ? "text-bg-success" : badge.Css.Contains("danger") ? "text-bg-danger" : badge.Css.Contains("warning") ? "text-bg-warning" : badge.Css.Contains("info") ? "text-bg-info" : "text-bg-secondary")">@badge.Text</span></td>
+                    <td>@UiHelper.Ngay(p.HanDuKien)</td>
+                    @if (laKhachHang) {
+                        <td class="text-end">@if (p.TrangThai == TrangThaiPhieuEnum.ChoXuLy) { <a asp-action="Huy" asp-route-id="@p.MaPhieu" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-circle me-1"></i>Hủy</a> }</td>
+                    }
+                </tr>
+            }
+            @if (!Model.Any()) { <tr><td colspan="@(laKhachHang ? 8 : 8)" class="text-center text-secondary py-5"><i class="bi bi-clipboard2-check fs-2 d-block mb-2"></i>Chưa có phiếu sửa chữa nào.</td></tr> }
+            </tbody>
+        </table>
+    </div>
+</div>
