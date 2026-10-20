@@ -1,0 +1,175 @@
+@model QLBaoHanh_UNETI04_DHTI17A4HN.Models.ChiTietSuaChua
+
+@{
+    ViewData["Title"] = "Thêm chi tiết sửa chữa";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Thêm chi tiết sửa chữa</h2>
+
+        <a asp-action="Index" class="btn btn-secondary">
+            Quay lại danh sách
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Thông tin chi tiết sửa chữa</h5>
+        </div>
+
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly"
+                     class="alert alert-danger"></div>
+
+                <div class="mb-3">
+                    <label asp-for="MaPhieu" class="form-label">
+                        Phiếu sửa chữa
+                    </label>
+                    <select asp-for="MaPhieu"
+                            class="form-select"
+                            asp-items="ViewBag.MaPhieu">
+                        <option value="">-- Chọn phiếu sửa chữa --</option>
+                    </select>
+                    <span asp-validation-for="MaPhieu"
+                          class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="MaKyThuatVien" class="form-label">
+                        Kỹ thuật viên
+                    </label>
+                    <select asp-for="MaKyThuatVien"
+                            class="form-select"
+                            asp-items="ViewBag.MaKyThuatVien">
+                        <option value="">-- Chọn kỹ thuật viên --</option>
+                    </select>
+                    <span asp-validation-for="MaKyThuatVien"
+                          class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="MaLinhKien" class="form-label">
+                        Linh kiện sử dụng
+                    </label>
+                    <select asp-for="MaLinhKien"
+                            class="form-select"
+                            asp-items="ViewBag.MaLinhKien"
+                            id="MaLinhKien">
+                        <option value="">-- Không sử dụng linh kiện --</option>
+                    </select>
+                    <span asp-validation-for="MaLinhKien"
+                          class="text-danger"></span>
+                    <small class="form-text text-muted">
+                        Chọn linh kiện nếu quá trình sửa chữa có sử dụng.
+                    </small>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="SoLuong" class="form-label">
+                        Số lượng linh kiện
+                    </label>
+                    <input asp-for="SoLuong"
+                           class="form-control"
+                           type="number"
+                           min="1"
+                           step="1"
+                           id="SoLuong"
+                           value="@(Model != null && Model.SoLuong > 0 ? Model.SoLuong : 1)" />
+                    <span asp-validation-for="SoLuong"
+                          class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="DonGia" class="form-label">
+                        Đơn giá (VNĐ)
+                    </label>
+                    <input asp-for="DonGia"
+                           class="form-control"
+                           type="number"
+                           min="0"
+                           step="1"
+                           id="DonGia" />
+                    <span asp-validation-for="DonGia"
+                          class="text-danger"></span>
+                    <small class="form-text text-muted">
+                        Đơn giá cần được kiểm tra lại ở phía máy chủ.
+                    </small>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="ThanhTien" class="form-label">
+                        Thành tiền (VNĐ)
+                    </label>
+                    <input asp-for="ThanhTien"
+                           class="form-control"
+                           id="ThanhTien"
+                           readonly />
+                    <span asp-validation-for="ThanhTien"
+                          class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="KetQuaChanDoan" class="form-label">
+                        Kết quả chẩn đoán
+                    </label>
+                    <textarea asp-for="KetQuaChanDoan"
+                              class="form-control"
+                              rows="3"
+                              placeholder="Nhập kết quả chẩn đoán..."></textarea>
+                    <span asp-validation-for="KetQuaChanDoan"
+                          class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="GhiChu" class="form-label">
+                        Ghi chú
+                    </label>
+                    <textarea asp-for="GhiChu"
+                              class="form-control"
+                              rows="3"
+                              placeholder="Nhập ghi chú nếu có..."></textarea>
+                    <span asp-validation-for="GhiChu"
+                          class="text-danger"></span>
+                </div>
+
+                <hr />
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        Lưu chi tiết sửa chữa
+                    </button>
+
+                    <a asp-action="Index" class="btn btn-secondary">
+                        Hủy
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        const soLuongInput = document.getElementById("SoLuong");
+        const donGiaInput = document.getElementById("DonGia");
+        const thanhTienInput = document.getElementById("ThanhTien");
+
+        function tinhThanhTien() {
+            const soLuong = Number(soLuongInput.value) || 0;
+            const donGia = Number(donGiaInput.value) || 0;
+
+            thanhTienInput.value = soLuong * donGia;
+        }
+
+        soLuongInput.addEventListener("input", tinhThanhTien);
+        donGiaInput.addEventListener("input", tinhThanhTien);
+
+        tinhThanhTien();
+    </script>
+}
