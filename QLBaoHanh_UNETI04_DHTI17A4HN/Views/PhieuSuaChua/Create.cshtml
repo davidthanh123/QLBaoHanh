@@ -1,0 +1,53 @@
+@model QLBaoHanh_UNETI04_DHTI17A4HN.ViewModels.TaoPhieuSuaChuaViewModel
+@using QLBaoHanh_UNETI04_DHTI17A4HN.Models.Enums
+@{
+    ViewData["Title"] = "Tạo phiếu sửa chữa";
+}
+<div class="row justify-content-center">
+    <div class="col-xl-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4 p-lg-5">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="rounded-3 bg-primary-subtle text-primary d-flex align-items-center justify-content-center" style="width:54px;height:54px"><i class="bi bi-tools fs-3"></i></div>
+                    <div><h2 class="h4 mb-1">Yêu cầu sửa chữa thiết bị</h2><p class="text-secondary mb-0">Ngày tiếp nhận và trạng thái sẽ được hệ thống tự động ghi nhận.</p></div>
+                </div>
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                    <div class="mb-3">
+                        <label asp-for="MaThietBi" class="form-label"></label>
+                        <select asp-for="MaThietBi" asp-items="Model.ThietBiCoTheSua" class="form-select">
+                            <option value="">-- Chọn thiết bị của bạn --</option>
+                        </select>
+                        <span asp-validation-for="MaThietBi" class="text-danger small"></span>
+                        @if (!Model.ThietBiCoTheSua.Any()) { <div class="form-text text-warning">Bạn chưa có thiết bị khả dụng để tạo phiếu. Thiết bị phải thuộc tài khoản của bạn và đang ở trạng thái Khả dụng.</div> }
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="NoiDungLoi" class="form-label"></label>
+                        <textarea asp-for="NoiDungLoi" class="form-control" rows="5" placeholder="Mô tả lỗi, thời điểm xảy ra và tình trạng hiện tại..."></textarea>
+                        <div class="form-text">Từ 5 đến 1000 ký tự.</div>
+                        <span asp-validation-for="NoiDungLoi" class="text-danger small"></span>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="MucDo" class="form-label"></label>
+                            <select asp-for="MucDo" asp-items="Html.GetEnumSelectList<MucDoEnum>()" class="form-select"></select>
+                            <span asp-validation-for="MucDo" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="HanDuKien" class="form-label"></label>
+                            <input asp-for="HanDuKien" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                            <span asp-validation-for="HanDuKien" class="text-danger small"></span>
+                        </div>
+                    </div>
+                    <div class="alert alert-info mt-4 mb-0"><i class="bi bi-info-circle me-1"></i>Sau khi tạo, phiếu ở trạng thái <strong>Chờ xử lý</strong>. Bạn chỉ có thể hủy khi phiếu vẫn đang chờ xử lý.</div>
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a asp-action="Index" class="btn btn-light">Quay lại</a>
+                        <button type="submit" class="btn btn-primary" disabled="@(!Model.ThietBiCoTheSua.Any())"><i class="bi bi-send me-1"></i>Gửi yêu cầu</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }
