@@ -1,0 +1,146 @@
+@*
+   Họ và tên: Đào Hoàng Thành
+   Mã sinh viên: 23103100223
+   Nội dung thực hiện: Module 2 - Chi tiết thiết bị, đổi trạng thái, xóa có kiểm soát, lịch sử sửa chữa.
+*@
+@model ThietBi
+@{
+    ViewData["Title"] = "Chi tiết thiết bị";
+    var vaiTro = Context.Session.LayVaiTro();
+    var khach = vaiTro == VaiTroEnum.KhachHang;
+    var admin = vaiTro == VaiTroEnum.Admin;
+}
+
+<div class="page-header">
+    <div>
+        <h1>@Model.TenThietBi</h1>
+        <p class="mono">@Model.SerialNumber · @UiHelper.Ma("TB", Model.MaThietBi)</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-outline-secondary" asp-action="Index">Quay lại</a>
+        @if (!khach && Model.TrangThai != TrangThaiThietBiEnum.KhongKhaDung)
+        {
+            <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.MaThietBi"><i class="bi bi-pencil"></i> Sửa thiết bị</a>
+        }
+        @if (khach && Model.TrangThai == TrangThaiThietBiEnum.KhaDung)
+        {
+            <a class="btn btn-accent" asp-controller="PhieuSuaChua" asp-action="Create" asp-route-maThietBi="@Model.MaThietBi">Tạo phiếu sửa chữa</a>
+        }
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <dl class="detail-grid">
+            <div><dt>Loại thiết bị</dt><dd>@Model.LoaiThietBi?.TenLoai</dd></div>
+            <div><dt>Hãng sản xuất</dt><dd>@Model.LoaiThietBi?.HangSanXuat</dd></div>
+            <div><dt>Khách hàng</dt><dd>@Model.KhachHang?.HoTen</dd></div>
+            <div><dt>Ngày mua</dt><dd>@UiHelper.Ngay(Model.NgayMua)</dd></div>
+            <div>
+                <dt>Hạn bảo hành</dt>
+                <dd>
+                    @UiHelper.Ngay(Model.HanBaoHanh)
+                    <partial name="_StatusBadge" model="UiHelper.BaoHanh(Model.HanBaoHanh)" />
+                </dd>
+            </div>
+            <div><dt>Giá trị</dt><dd class="num">@UiHelper.Tien(Model.GiaTri)</dd></div>
+            <div><dt>Trạng thái</dt><dd><partial name="_StatusBadge" model="UiHelper.Badge(Model.TrangThai)" /></dd></div>
+            <div class="is-wide"><dt>Mô tả</dt><dd>@(string.IsNullOrWhiteSpace(Model.MoTa) ? "—" : Model.MoTa)</dd></div>
+            <div class="is-wide"><dt>Ghi chú</dt><dd>@(string.IsNullOrWhiteSpace(Model.GhiChu) ? "—" : Model.GhiChu)</dd></div>
+        </dl>
+    </div>
+</div>
+
+@if (!khach)
+{
+    <div class="card mt-3">
+        <div class="card-body d-flex flex-wrap gap-2 align-items-center justify-content-between">
+            <div>
+                <strong>Quản lý trạng thái</strong>
+                @if (Model.TrangThai == TrangThaiThietBiEnum.DangSuaChua)
+                {
+                    <div class="form-text">Thiết bị đang được sửa chữa, trạng thái do phiếu sửa chữa quyết định.</div>
+                }
+            </div>
+            <div class="d-flex gap-2">
+                @if (Model.TrangThai == TrangThaiThietBiEnum.KhaDung)
+                {
+                    <button type="button" class="btn btn-outline-danger"
+                            data-bs-toggle="modal" data-bs-target="#qbXacNhan"
+                            data-action="@Url.Action("DoiTrangThai", new { id = Model.MaThietBi, trangThaiMoi = "KhongKhaDung" })"
+                            data-title="Ngừng nhận sửa thiết bị"
+                            data-message="@("Chuyển thiết bị " + Model.TenThietBi + " sang \"Không khả dụng\"? Khách hàng sẽ không tạo được phiếu cho thiết bị này.")"
+                            data-ok="Ngừng nhận sửa">
+                        Ngừng nhận sửa
+                    </button>
+                }
+                else if (Model.TrangThai == TrangThaiThietBiEnum.KhongKhaDung)
+                {
+                    <button type="button" class="btn btn-outline-secondary"
+                            data-bs-toggle="modal" data-bs-target="#qbXacNhan"
+                            data-action="@Url.Action("DoiTrangThai", new { id = Model.MaThietBi, trangThaiMoi = "KhaDung" })"
+                            data-title="Mở lại thiết bị"
+                            data-message="@("Chuyển thiết bị " + Model.TenThietBi + " về \"Khả dụng\"?")"
+                            data-ok="Mở lại">
+                        Mở lại (Khả dụng)
+                    </button>
+                }
+                @if (admin)
+                {
+                    <button type="button" class="btn btn-danger"
+                            data-bs-toggle="modal" data-bs-target="#qbXacNhan"
+                            data-action="@Url.Action("Xoa", new { id = Model.MaThietBi })"
+                            data-title="Xóa thiết bị"
+                            data-message="@("Xóa thiết bị " + Model.TenThietBi + "? Thiết bị đã có phiếu sửa chữa sẽ không xóa được.")"
+                            data-ok="Xóa">
+                        <i class="bi bi-trash"></i> Xóa thiết bị
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<h3 class="mt-4 mb-3">Lịch sử sửa chữa</h3>
+<div class="table-card">
+    @if (!Model.PhieuSuaChuas.Any())
+    {
+        <div class="empty-state">
+            <i class="bi bi-tools" style="font-size:2rem"></i>
+            <h3>Chưa có phiếu sửa chữa</h3>
+            <p>Thiết bị này chưa từng được tạo phiếu sửa chữa.</p>
+        </div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Mã phiếu</th>
+                    <th>Ngày tiếp nhận</th>
+                    <th>Nội dung lỗi</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model.PhieuSuaChuas.OrderByDescending(x => x.NgayTiepNhan))
+                {
+                    <tr class="@UiHelper.HangMo(p.TrangThai)">
+                        <td class="mono">@UiHelper.Ma("PSC", p.MaPhieu)</td>
+                        <td>@UiHelper.NgayGio(p.NgayTiepNhan)</td>
+                        <td>@p.NoiDungLoi</td>
+                        <td><partial name="_StatusBadge" model="UiHelper.Badge(p.TrangThai)" /></td>
+                        <td>
+                            <div class="row-actions">
+                                <a class="btn btn-ghost btn-icon" asp-controller="PhieuSuaChua" asp-action="Details" asp-route-id="@p.MaPhieu" title="Xem phiếu"><i class="bi bi-eye"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+<partial name="_XacNhanModal" />
