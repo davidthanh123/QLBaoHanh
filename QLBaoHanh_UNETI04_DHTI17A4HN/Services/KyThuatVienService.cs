@@ -54,8 +54,11 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
             };
         }
 
-        public async Task<KetQuaDichVu> ThemAsync(KyThuatVienViewModel model)
+        public async Task<KetQuaDichVu> ThemAsync(KyThuatVienViewModel model, bool modelHopLe)
         {
+            if (!modelHopLe)
+                return KetQuaDichVu.DuLieuKhongHopLe();
+
             var taiKhoanHopLe = await _db.TaiKhoans.AnyAsync(t =>
                 t.MaTaiKhoan == model.MaTaiKhoan && t.VaiTro == VaiTroEnum.NhanVien && t.TrangThai);
             var daCoHoSo = await _db.KyThuatViens.AnyAsync(k => k.MaTaiKhoan == model.MaTaiKhoan);

@@ -16,8 +16,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
 
         Task<KyThuatVienViewModel?> LayDeSuaAsync(int id);
 
-        // Chỉ gọi khi ModelState đã hợp lệ (code cũ trả về View ngay nếu ModelState lỗi).
-        Task<KetQuaDichVu> ThemAsync(KyThuatVienViewModel model);
+        Task<KetQuaDichVu> ThemAsync(KyThuatVienViewModel model, bool modelHopLe);
 
         // DuLieu = MaTaiKhoan hiện đang gắn với hồ sơ (trước khi sửa), để Controller nạp lại dropdown khi form lỗi.
         Task<KetQuaDichVu<int>> CapNhatAsync(int id, KyThuatVienViewModel model, bool modelHopLe);

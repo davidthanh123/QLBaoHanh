@@ -65,7 +65,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
             return KetQuaDichVu.Ok($"Đã thêm loại thiết bị {model.TenLoai}.");
         }
 
-        public async Task<KetQuaDichVu> SuaAsync(int id, LoaiThietBi model, bool modelHopLe)
+        public async Task<KetQuaDichVu> CapNhatAsync(int id, LoaiThietBi model, bool modelHopLe)
         {
             var loai = await _db.LoaiThietBis.FirstOrDefaultAsync(l => l.MaLoai == id);
             if (loai == null) return KetQuaDichVu.KhongTimThay();

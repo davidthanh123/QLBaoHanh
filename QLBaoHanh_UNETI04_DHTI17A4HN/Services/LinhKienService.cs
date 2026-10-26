@@ -15,13 +15,13 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
 
         public LinhKienService(AppDbContext db) => _db = db;
 
-        public async Task<List<LinhKien>> TimKiemAsync(string? searchString, string? trangThai, string? sapXep)
+        public async Task<List<LinhKien>> TimKiemAsync(string? tuKhoa, string? trangThai, string? sapXep)
         {
             var query = _db.LinhKiens.AsNoTracking().AsQueryable();
 
             // Tìm theo tên linh kiện
-            if (!string.IsNullOrWhiteSpace(searchString))
-                query = query.Where(l => l.TenLinhKien.Contains(searchString));
+            if (!string.IsNullOrWhiteSpace(tuKhoa))
+                query = query.Where(l => l.TenLinhKien.Contains(tuKhoa));
 
             // Lọc trạng thái
             if (trangThai == "hoatdong")

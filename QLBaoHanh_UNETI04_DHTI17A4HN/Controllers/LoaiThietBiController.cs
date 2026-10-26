@@ -67,7 +67,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Controllers
         {
             if (id != model.MaLoai) return BadRequest();
 
-            var ketQua = await _service.SuaAsync(id, model, ModelState.IsValid);
+            var ketQua = await _service.CapNhatAsync(id, model, ModelState.IsValid);
             if (ketQua.Loai == LoaiKetQua.KhongTimThay) return NotFound();
             if (ketQua.Loai == LoaiKetQua.DuLieuKhongHopLe)
             {

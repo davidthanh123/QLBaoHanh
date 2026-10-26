@@ -8,7 +8,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
 {
     public interface ILinhKienService
     {
-        Task<List<LinhKien>> TimKiemAsync(string? searchString, string? trangThai, string? sapXep);
+        Task<List<LinhKien>> TimKiemAsync(string? tuKhoa, string? trangThai, string? sapXep);
         Task<LinhKien?> LayChiTietAsync(int id);
 
         Task<KetQuaDichVu> ThemAsync(LinhKien linhKien, bool modelHopLe);

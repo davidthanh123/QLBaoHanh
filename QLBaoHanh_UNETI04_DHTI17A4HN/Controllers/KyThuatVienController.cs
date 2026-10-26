@@ -34,13 +34,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(KyThuatVienViewModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                await NapTaiKhoanNhanVien();
-                return View(model);
-            }
-
-            var ketQua = await _service.ThemAsync(model);
+            var ketQua = await _service.ThemAsync(model, ModelState.IsValid);
             if (!ketQua.ThanhCong)
             {
                 ketQua.GopLoiVaoModelState(ModelState);

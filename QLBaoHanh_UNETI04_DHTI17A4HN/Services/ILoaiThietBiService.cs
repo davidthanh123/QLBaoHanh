@@ -17,7 +17,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
 
         // modelHopLe = ModelState.IsValid của Controller (lỗi DataAnnotations).
         Task<KetQuaDichVu> ThemAsync(LoaiThietBi model, bool modelHopLe);
-        Task<KetQuaDichVu> SuaAsync(int id, LoaiThietBi model, bool modelHopLe);
+        Task<KetQuaDichVu> CapNhatAsync(int id, LoaiThietBi model, bool modelHopLe);
         Task<KetQuaDichVu> DoiTrangThaiAsync(int id);
         Task<KetQuaDichVu> XoaAsync(int id);
     }
