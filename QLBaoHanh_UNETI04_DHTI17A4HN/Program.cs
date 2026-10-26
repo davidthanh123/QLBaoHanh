@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Data;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Helpers;
+using QLBaoHanh_UNETI04_DHTI17A4HN.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,19 @@ builder.Services.AddSession(options =>
 });
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Đăng ký Service: Scoped = 1 instance cho mỗi request, cùng vòng đời với AppDbContext.
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<INhatKyDangNhapService, NhatKyDangNhapService>();
+builder.Services.AddScoped<IDangNhapService, DangNhapService>();
+builder.Services.AddScoped<ITaiKhoanService, TaiKhoanService>();
+builder.Services.AddScoped<IKhachHangService, KhachHangService>();
+builder.Services.AddScoped<ILoaiThietBiService, LoaiThietBiService>();
+builder.Services.AddScoped<IThietBiService, ThietBiService>();
+builder.Services.AddScoped<IKyThuatVienService, KyThuatVienService>();
+builder.Services.AddScoped<ILinhKienService, LinhKienService>();
+builder.Services.AddScoped<IPhieuSuaChuaService, PhieuSuaChuaService>();
+builder.Services.AddScoped<IChiTietSuaChuaService, ChiTietSuaChuaService>();
+
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {

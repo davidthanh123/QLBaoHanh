@@ -1,41 +1,25 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using QLBaoHanh_UNETI04_DHTI17A4HN.Data;
+using Microsoft.AspNetCore.Mvc;
+using QLBaoHanh_UNETI04_DHTI17A4HN.Services;
 
 namespace QLBaoHanh_UNETI04_DHTI17A4HN.Controllers
 {
     public class DashboardController : Controller
     {
-        private readonly AppDbContext _context;
+        private readonly IDashboardService _service;
 
-        public DashboardController(AppDbContext context)
-        {
-            _context = context;
-        }
+        public DashboardController(IDashboardService service) => _service = service;
+
         public async Task<IActionResult> Index()
         {
-            ViewBag.TongKhachHang =
-                await _context.KhachHangs.CountAsync();
+            var tk = await _service.LayThongKeAsync();
 
-            ViewBag.TongThietBi =
-                await _context.ThietBis.CountAsync();
-
-            ViewBag.TongPhieuSuaChua =
-                await _context.PhieuSuaChuas.CountAsync();
-
-            ViewBag.TongLinhKien =
-                await _context.LinhKiens.CountAsync();
-
-            ViewBag.TongKyThuatVien =
-                await _context.KyThuatViens.CountAsync();
-
-            ViewBag.TongChiTietSuaChua =
-                await _context.ChiTietSuaChuas.CountAsync();
-
-            decimal tongGiaTri = await _context.ChiTietSuaChuas
-                .SumAsync(c => (decimal?)c.ThanhTien) ?? 0m;
-
-            ViewBag.TongGiaTriSuaChua = tongGiaTri;
+            ViewBag.TongKhachHang = tk.TongKhachHang;
+            ViewBag.TongThietBi = tk.TongThietBi;
+            ViewBag.TongPhieuSuaChua = tk.TongPhieuSuaChua;
+            ViewBag.TongLinhKien = tk.TongLinhKien;
+            ViewBag.TongKyThuatVien = tk.TongKyThuatVien;
+            ViewBag.TongChiTietSuaChua = tk.TongChiTietSuaChua;
+            ViewBag.TongGiaTriSuaChua = tk.TongGiaTriSuaChua;
 
             return View();
         }
