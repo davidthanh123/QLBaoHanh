@@ -3,74 +3,48 @@
 // Nội dung thực hiện: Module 5 - nghiệp vụ Quản lý linh kiện (tách từ LinhKienController).
 
 using Microsoft.EntityFrameworkCore;
-using QLBaoHanh_UNETI04_DHTI17A4HN.Data;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models;
+using QLBaoHanh_UNETI04_DHTI17A4HN.Repositories;
 
 namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
 {
     public class LinhKienService : ILinhKienService
     {
         private const string LoiTrungTen = "Tên linh kiện đã tồn tại.";
-        private readonly AppDbContext _db;
+        private readonly IUnitOfWork _uow;
 
-        public LinhKienService(AppDbContext db) => _db = db;
+        public LinhKienService(IUnitOfWork uow) => _uow = uow;
 
-        public async Task<List<LinhKien>> TimKiemAsync(string? tuKhoa, string? trangThai, string? sapXep)
-        {
-            var query = _db.LinhKiens.AsNoTracking().AsQueryable();
-
-            // Tìm theo tên linh kiện
-            if (!string.IsNullOrWhiteSpace(tuKhoa))
-                query = query.Where(l => l.TenLinhKien.Contains(tuKhoa));
-
-            // Lọc trạng thái
-            if (trangThai == "hoatdong")
-                query = query.Where(l => l.TrangThai);
-            else if (trangThai == "ngung")
-                query = query.Where(l => !l.TrangThai);
-
-            // Sắp xếp
-            query = sapXep switch
-            {
-                "gia_tang" => query.OrderBy(l => l.DonGia),
-                "gia_giam" => query.OrderByDescending(l => l.DonGia),
-                "ton_tang" => query.OrderBy(l => l.SoLuongTon),
-                "ton_giam" => query.OrderByDescending(l => l.SoLuongTon),
-                _ => query.OrderBy(l => l.MaLinhKien)
-            };
-
-            return await query.ToListAsync();
-        }
+        public Task<List<LinhKien>> TimKiemAsync(string? tuKhoa, string? trangThai, string? sapXep) =>
+            _uow.LinhKiens.TimKiemAsync(tuKhoa, trangThai, sapXep);
 
         public Task<LinhKien?> LayChiTietAsync(int id) =>
-            _db.LinhKiens.AsNoTracking().FirstOrDefaultAsync(l => l.MaLinhKien == id);
+            _uow.LinhKiens.GetByIdAsync(id);
 
         public async Task<KetQuaDichVu> ThemAsync(LinhKien linhKien, bool modelHopLe)
         {
             var loi = new List<LoiTruongNhap>();
-            if (await _db.LinhKiens.AnyAsync(l => l.TenLinhKien == linhKien.TenLinhKien))
+            if (await _uow.LinhKiens.KiemTraTrungTenAsync(linhKien.TenLinhKien))
                 loi.Add(new(nameof(linhKien.TenLinhKien), LoiTrungTen));
 
             if (!modelHopLe || loi.Count > 0)
                 return KetQuaDichVu.DuLieuKhongHopLe(loi);
 
-            _db.LinhKiens.Add(linhKien);
-            await _db.SaveChangesAsync();
+            await _uow.LinhKiens.AddAsync(linhKien);
+            await _uow.SaveChangesAsync();
             return KetQuaDichVu.Ok("Thêm linh kiện thành công.");
         }
 
         public async Task<KetQuaDichVu> CapNhatAsync(int id, LinhKien linhKien, bool modelHopLe)
         {
             var loi = new List<LoiTruongNhap>();
-            if (await _db.LinhKiens.AnyAsync(l => l.MaLinhKien != id && l.TenLinhKien == linhKien.TenLinhKien))
+            if (await _uow.LinhKiens.KiemTraTrungTenAsync(linhKien.TenLinhKien, id))
                 loi.Add(new(nameof(linhKien.TenLinhKien), LoiTrungTen));
 
             if (!modelHopLe || loi.Count > 0)
                 return KetQuaDichVu.DuLieuKhongHopLe(loi);
 
-            // Lấy entity đang được theo dõi để tránh ghi đè
-            // các thuộc tính điều hướng do form gửi lên.
-            var entity = await _db.LinhKiens.FindAsync(id);
+            var entity = await _uow.LinhKiens.GetByIdAsync(id);
             if (entity == null) return KetQuaDichVu.KhongTimThay();
 
             entity.TenLinhKien = linhKien.TenLinhKien;
@@ -82,7 +56,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
 
             try
             {
-                await _db.SaveChangesAsync();
+                await _uow.SaveChangesAsync();
             }
             catch (DbUpdateException)
             {
@@ -97,23 +71,30 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
 
         public async Task<KetQuaDichVu> XoaAsync(int id)
         {
-            var linhKien = await _db.LinhKiens.FirstOrDefaultAsync(l => l.MaLinhKien == id);
+            var linhKien = await _uow.LinhKiens.GetByIdAsync(id);
             if (linhKien == null) return KetQuaDichVu.KhongTimThay();
 
-            // Kiểm tra linh kiện đã được sử dụng chưa
-            if (await _db.ChiTietSuaChuas.AnyAsync(c => c.MaLinhKien == id))
-                return KetQuaDichVu.Loi("Không thể xóa linh kiện đã được sử dụng trong phiếu sửa chữa.");
-
-            _db.LinhKiens.Remove(linhKien);
+            _uow.LinhKiens.Remove(linhKien);
             try
             {
-                await _db.SaveChangesAsync();
+                await _uow.SaveChangesAsync();
                 return KetQuaDichVu.Ok("Xóa linh kiện thành công.");
             }
             catch (DbUpdateException)
             {
-                return KetQuaDichVu.Loi("Không thể xóa linh kiện do dữ liệu đang được tham chiếu.");
+                return KetQuaDichVu.Loi("Không thể xóa linh kiện đã có chi tiết sửa chữa sử dụng.");
             }
+        }
+
+        public async Task<KetQuaDichVu> DoiTrangThaiAsync(int id)
+        {
+            var linhKien = await _uow.LinhKiens.GetByIdAsync(id);
+            if (linhKien == null) return KetQuaDichVu.KhongTimThay();
+
+            linhKien.TrangThai = !linhKien.TrangThai;
+            await _uow.SaveChangesAsync();
+            var thongBao = linhKien.TrangThai ? "Đã kích hoạt linh kiện." : "Đã tạm dừng linh kiện.";
+            return KetQuaDichVu.Ok(thongBao);
         }
     }
 }

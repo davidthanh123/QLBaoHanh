@@ -2,44 +2,26 @@
 // Mã sinh viên: [điền mã sinh viên của bạn]
 // Nội dung thực hiện: Module 4 - quản lý hồ sơ kỹ thuật viên (tách từ KyThuatVienController).
 
-using Microsoft.EntityFrameworkCore;
-using QLBaoHanh_UNETI04_DHTI17A4HN.Data;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models;
-using QLBaoHanh_UNETI04_DHTI17A4HN.Models.Enums;
+using QLBaoHanh_UNETI04_DHTI17A4HN.Repositories;
 using QLBaoHanh_UNETI04_DHTI17A4HN.ViewModels;
 
 namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
 {
     public class KyThuatVienService : IKyThuatVienService
     {
-        private readonly AppDbContext _db;
-        public KyThuatVienService(AppDbContext db) => _db = db;
+        private readonly IUnitOfWork _uow;
+        public KyThuatVienService(IUnitOfWork uow) => _uow = uow;
 
-        public async Task<List<KyThuatVien>> TimKiemAsync(string? tuKhoa, bool? trangThai)
-        {
-            var query = _db.KyThuatViens.AsNoTracking().Include(k => k.TaiKhoan).AsQueryable();
-            if (!string.IsNullOrWhiteSpace(tuKhoa))
-            {
-                var tuKhoaSach = tuKhoa.Trim();
-                query = query.Where(k => k.HoTen.Contains(tuKhoaSach) ||
-                    (k.ChuyenMon != null && k.ChuyenMon.Contains(tuKhoaSach)) ||
-                    (k.TaiKhoan != null && k.TaiKhoan.TenDangNhap.Contains(tuKhoaSach)));
-            }
-            if (trangThai.HasValue) query = query.Where(k => k.TrangThai == trangThai.Value);
-            return await query.OrderBy(k => k.HoTen).ToListAsync();
-        }
+        public Task<List<KyThuatVien>> TimKiemAsync(string? tuKhoa, bool? trangThai) =>
+            _uow.KyThuatViens.TimKiemAsync(tuKhoa, trangThai);
 
-        public async Task<List<TaiKhoan>> LayTaiKhoanNhanVienAsync(int? taiKhoanHienTai = null)
-        {
-            return await _db.TaiKhoans.AsNoTracking()
-                .Where(t => t.VaiTro == VaiTroEnum.NhanVien && t.TrangThai &&
-                    (t.KyThuatVien == null || t.MaTaiKhoan == taiKhoanHienTai))
-                .OrderBy(t => t.HoTen).ToListAsync();
-        }
+        public Task<List<TaiKhoan>> LayTaiKhoanNhanVienAsync(int? taiKhoanHienTai = null) =>
+            _uow.TaiKhoans.LayDanhSachNhanVienChuaCoHoSoKtvAsync(taiKhoanHienTai);
 
         public async Task<KyThuatVienViewModel?> LayDeSuaAsync(int id)
         {
-            var ktv = await _db.KyThuatViens.AsNoTracking().FirstOrDefaultAsync(k => k.MaKyThuatVien == id);
+            var ktv = await _uow.KyThuatViens.GetByIdAsync(id);
             if (ktv == null) return null;
 
             return new KyThuatVienViewModel
@@ -59,9 +41,8 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
             if (!modelHopLe)
                 return KetQuaDichVu.DuLieuKhongHopLe();
 
-            var taiKhoanHopLe = await _db.TaiKhoans.AnyAsync(t =>
-                t.MaTaiKhoan == model.MaTaiKhoan && t.VaiTro == VaiTroEnum.NhanVien && t.TrangThai);
-            var daCoHoSo = await _db.KyThuatViens.AnyAsync(k => k.MaTaiKhoan == model.MaTaiKhoan);
+            var taiKhoanHopLe = await _uow.TaiKhoans.KiemTraNhanVienHoatDongHopLeAsync(model.MaTaiKhoan);
+            var daCoHoSo = await _uow.KyThuatViens.KiemTraTaiKhoanDaCoHoSoAsync(model.MaTaiKhoan);
             if (!taiKhoanHopLe || daCoHoSo)
                 return KetQuaDichVu.DuLieuKhongHopLe(new[]
                 {
@@ -69,7 +50,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
                         "Tài khoản phải là nhân viên hoạt động và chưa có hồ sơ kỹ thuật viên.")
                 });
 
-            _db.KyThuatViens.Add(new KyThuatVien
+            await _uow.KyThuatViens.AddAsync(new KyThuatVien
             {
                 MaTaiKhoan = model.MaTaiKhoan,
                 HoTen = model.HoTen.Trim(),
@@ -78,22 +59,21 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
                 Email = model.Email?.Trim(),
                 TrangThai = true
             });
-            await _db.SaveChangesAsync();
+            await _uow.SaveChangesAsync();
             return KetQuaDichVu.Ok("Đã tạo hồ sơ kỹ thuật viên.");
         }
 
         public async Task<KetQuaDichVu<int>> CapNhatAsync(int id, KyThuatVienViewModel model, bool modelHopLe)
         {
-            var ktv = await _db.KyThuatViens.FindAsync(id);
+            var ktv = await _uow.KyThuatViens.GetByIdAsync(id);
             if (ktv == null) return KetQuaDichVu.KhongTimThay().Kem(0);
             var taiKhoanCu = ktv.MaTaiKhoan;
 
             if (!modelHopLe)
                 return KetQuaDichVu.DuLieuKhongHopLe().Kem(taiKhoanCu);
 
-            var taiKhoanHopLe = await _db.TaiKhoans.AnyAsync(t =>
-                t.MaTaiKhoan == model.MaTaiKhoan && t.VaiTro == VaiTroEnum.NhanVien && t.TrangThai);
-            var taiKhoanDaGan = await _db.KyThuatViens.AnyAsync(k => k.MaTaiKhoan == model.MaTaiKhoan && k.MaKyThuatVien != id);
+            var taiKhoanHopLe = await _uow.TaiKhoans.KiemTraNhanVienHoatDongHopLeAsync(model.MaTaiKhoan);
+            var taiKhoanDaGan = await _uow.KyThuatViens.KiemTraTaiKhoanDaCoHoSoAsync(model.MaTaiKhoan, id);
             if (!taiKhoanHopLe || taiKhoanDaGan)
                 return KetQuaDichVu.DuLieuKhongHopLe(new[]
                 {
@@ -107,7 +87,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
             ktv.SoDienThoai = model.SoDienThoai?.Trim();
             ktv.Email = model.Email?.Trim();
             ktv.TrangThai = model.TrangThai;
-            await _db.SaveChangesAsync();
+            await _uow.SaveChangesAsync();
             return KetQuaDichVu.Ok("Đã cập nhật hồ sơ kỹ thuật viên.").Kem(taiKhoanCu);
         }
     }

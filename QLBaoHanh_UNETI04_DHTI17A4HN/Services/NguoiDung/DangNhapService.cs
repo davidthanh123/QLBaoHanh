@@ -2,11 +2,10 @@
 // Mã sinh viên: 23103100203
 // Nội dung thực hiện: Module 1 - nghiệp vụ đăng nhập: kiểm tra mật khẩu, khóa tạm khi sai nhiều lần, ghi nhật ký (tách từ TaiKhoanController).
 
-using Microsoft.EntityFrameworkCore;
-using QLBaoHanh_UNETI04_DHTI17A4HN.Data;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Helpers;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models.Enums;
+using QLBaoHanh_UNETI04_DHTI17A4HN.Repositories;
 using QLBaoHanh_UNETI04_DHTI17A4HN.ViewModels;
 
 namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
@@ -17,37 +16,37 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
         private const int SoLanSaiToiDa = 5;
         private static readonly TimeSpan ThoiGianKhoaTam = TimeSpan.FromMinutes(15);
 
-        private readonly AppDbContext _db;
-        public DangNhapService(AppDbContext db) => _db = db;
+        private readonly IUnitOfWork _uow;
+        public DangNhapService(IUnitOfWork uow) => _uow = uow;
 
         public async Task<KetQuaDichVu<ThongTinDangNhap?>> DangNhapAsync(DangNhapViewModel model, string? diaChiIp)
         {
             var tenNhap = model.TenDangNhap.Trim();
             var bayGio = DateTime.Now;
 
-            var taiKhoan = await _db.TaiKhoans.FirstOrDefaultAsync(t => t.TenDangNhap == tenNhap);
+            var taiKhoan = await _uow.TaiKhoans.LayTheoTenDangNhapAsync(tenNhap);
 
             // 1. Không tồn tại: báo chung chung để không lộ tên đăng nhập nào có thật
             if (taiKhoan == null)
             {
-                GhiNhatKy(null, tenNhap, KetQuaDangNhapEnum.KhongTonTai, bayGio, diaChiIp);
-                await _db.SaveChangesAsync();
+                await GhiNhatKyAsync(null, tenNhap, KetQuaDangNhapEnum.KhongTonTai, bayGio, diaChiIp);
+                await _uow.SaveChangesAsync();
                 return ThatBai("Tên đăng nhập hoặc mật khẩu không đúng.");
             }
 
             // 2. Bị Admin khóa vĩnh viễn
             if (!taiKhoan.TrangThai)
             {
-                GhiNhatKy(taiKhoan.MaTaiKhoan, tenNhap, KetQuaDangNhapEnum.BiKhoa, bayGio, diaChiIp);
-                await _db.SaveChangesAsync();
+                await GhiNhatKyAsync(taiKhoan.MaTaiKhoan, tenNhap, KetQuaDangNhapEnum.BiKhoa, bayGio, diaChiIp);
+                await _uow.SaveChangesAsync();
                 return ThatBai("Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.");
             }
 
             // 3. Đang bị khóa tạm do nhập sai nhiều lần
             if (taiKhoan.KhoaDenNgay.HasValue && taiKhoan.KhoaDenNgay.Value > bayGio)
             {
-                GhiNhatKy(taiKhoan.MaTaiKhoan, tenNhap, KetQuaDangNhapEnum.BiKhoa, bayGio, diaChiIp);
-                await _db.SaveChangesAsync();
+                await GhiNhatKyAsync(taiKhoan.MaTaiKhoan, tenNhap, KetQuaDangNhapEnum.BiKhoa, bayGio, diaChiIp);
+                await _uow.SaveChangesAsync();
                 return ThatBai($"Tài khoản tạm khóa do nhập sai nhiều lần. Thử lại sau {taiKhoan.KhoaDenNgay.Value:HH:mm dd/MM/yyyy}.");
             }
 
@@ -66,8 +65,8 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
                 {
                     thongBao = $"Tên đăng nhập hoặc mật khẩu không đúng. Còn {SoLanSaiToiDa - taiKhoan.SoLanDangNhapSai} lần thử.";
                 }
-                GhiNhatKy(taiKhoan.MaTaiKhoan, tenNhap, KetQuaDangNhapEnum.SaiMatKhau, bayGio, diaChiIp);
-                await _db.SaveChangesAsync();
+                await GhiNhatKyAsync(taiKhoan.MaTaiKhoan, tenNhap, KetQuaDangNhapEnum.SaiMatKhau, bayGio, diaChiIp);
+                await _uow.SaveChangesAsync();
                 return ThatBai(thongBao);
             }
 
@@ -77,8 +76,8 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
             taiKhoan.LanDangNhapCuoi = bayGio;
             if (canBamLai)
                 taiKhoan.MatKhau = MatKhauHelper.Bam(taiKhoan, model.MatKhau);
-            GhiNhatKy(taiKhoan.MaTaiKhoan, tenNhap, KetQuaDangNhapEnum.ThanhCong, bayGio, diaChiIp);
-            await _db.SaveChangesAsync();
+            await GhiNhatKyAsync(taiKhoan.MaTaiKhoan, tenNhap, KetQuaDangNhapEnum.ThanhCong, bayGio, diaChiIp);
+            await _uow.SaveChangesAsync();
 
             return KetQuaDichVu.Ok().Kem<ThongTinDangNhap?>(
                 new ThongTinDangNhap(taiKhoan.MaTaiKhoan, taiKhoan.HoTen, taiKhoan.VaiTro));
@@ -87,9 +86,9 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
         private static KetQuaDichVu<ThongTinDangNhap?> ThatBai(string thongBao) =>
             KetQuaDichVu.Loi(thongBao).Kem<ThongTinDangNhap?>(null);
 
-        private void GhiNhatKy(int? maTaiKhoan, string tenNhap, KetQuaDangNhapEnum ketQua, DateTime thoiGian, string? diaChiIp)
+        private async Task GhiNhatKyAsync(int? maTaiKhoan, string tenNhap, KetQuaDangNhapEnum ketQua, DateTime thoiGian, string? diaChiIp)
         {
-            _db.NhatKyDangNhaps.Add(new NhatKyDangNhap
+            await _uow.NhatKyDangNhaps.AddAsync(new NhatKyDangNhap
             {
                 MaTaiKhoan = maTaiKhoan,
                 TenDangNhapNhap = tenNhap.Length > 50 ? tenNhap[..50] : tenNhap,

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Data;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Helpers;
+using QLBaoHanh_UNETI04_DHTI17A4HN.Repositories;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,7 +19,24 @@ builder.Services.AddSession(options =>
 });
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-// Đăng ký Service: Scoped = 1 instance cho mỗi request, cùng vòng đời với AppDbContext.
+
+// Đăng ký tầng Repositories & UnitOfWork
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<ITaiKhoanRepository, TaiKhoanRepository>();
+builder.Services.AddScoped<ILoaiThietBiRepository, LoaiThietBiRepository>();
+builder.Services.AddScoped<IThietBiRepository, ThietBiRepository>();
+builder.Services.AddScoped<IKhachHangRepository, KhachHangRepository>();
+builder.Services.AddScoped<IPhieuSuaChuaRepository, PhieuSuaChuaRepository>();
+builder.Services.AddScoped<IChiTietSuaChuaRepository, ChiTietSuaChuaRepository>();
+builder.Services.AddScoped<ILinhKienRepository, LinhKienRepository>();
+builder.Services.AddScoped<IKyThuatVienRepository, KyThuatVienRepository>();
+builder.Services.AddScoped<ILichSuTrangThaiPhieuRepository, LichSuTrangThaiPhieuRepository>();
+builder.Services.AddScoped<INhatKyDangNhapRepository, NhatKyDangNhapRepository>();
+builder.Services.AddScoped<ITepDinhKemRepository, TepDinhKemRepository>();
+builder.Services.AddScoped<IThongBaoRepository, ThongBaoRepository>();
+
+// Đăng ký Service: Scoped = 1 instance cho mỗi request, cùng vòng đời với AppDbContext / UnitOfWork.
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<INhatKyDangNhapService, NhatKyDangNhapService>();
 builder.Services.AddScoped<IDangNhapService, DangNhapService>();
@@ -54,6 +72,5 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
-
 
 app.Run();

@@ -5,9 +5,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.EntityFrameworkCore;
-using QLBaoHanh_UNETI04_DHTI17A4HN.Data;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models.Enums;
+using QLBaoHanh_UNETI04_DHTI17A4HN.Repositories;
 
 namespace QLBaoHanh_UNETI04_DHTI17A4HN.Helpers
 {
@@ -52,11 +51,11 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Helpers
     // Đồng thời đối chiếu tài khoản trong CSDL: bị khóa/xóa thì hủy Session, đổi vai trò thì cập nhật Session.
     public sealed class DangNhapFilter : IAsyncAuthorizationFilter
     {
-        private readonly AppDbContext _db;
+        private readonly ITaiKhoanRepository _taiKhoanRepo;
 
-        public DangNhapFilter(AppDbContext db)
+        public DangNhapFilter(ITaiKhoanRepository taiKhoanRepo)
         {
-            _db = db;
+            _taiKhoanRepo = taiKhoanRepo;
         }
 
         public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
@@ -78,10 +77,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Helpers
                 return;
             }
 
-            var tk = await _db.TaiKhoans.AsNoTracking()
-                .Where(t => t.MaTaiKhoan == ma.Value)
-                .Select(t => new { t.TrangThai, t.VaiTro, t.HoTen })
-                .FirstOrDefaultAsync();
+            var tk = await _taiKhoanRepo.LayThongTinXacThucAsync(ma.Value);
 
             if (tk == null || !tk.TrangThai)
             {
