@@ -38,6 +38,7 @@ builder.Services.AddScoped<IThongBaoRepository, ThongBaoRepository>();
 
 // Đăng ký Service: Scoped = 1 instance cho mỗi request, cùng vòng đời với AppDbContext / UnitOfWork.
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IHomeService, HomeService>();
 builder.Services.AddScoped<INhatKyDangNhapService, NhatKyDangNhapService>();
 builder.Services.AddScoped<IDangNhapService, DangNhapService>();
 builder.Services.AddScoped<ITaiKhoanService, TaiKhoanService>();

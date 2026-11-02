@@ -1,0 +1,208 @@
+@* Họ và tên: David Thành *@
+@* Mã sinh viên: 23103100239 *@
+@* Nội dung thực hiện: Trang chủ - lời chào, số liệu tóm tắt, lối tắt và phiếu gần đây theo vai trò. *@
+@model HomeViewModel
+@{
+    ViewData["Title"] = "Trang chủ";
+    var laKhach = Model.VaiTro == VaiTroEnum.KhachHang;
+}
+
+<div class="page-header">
+    <div>
+        <h2 class="h4 mb-0">Xin chào, @Model.HoTen</h2>
+        <p>
+            @(laKhach
+                ? "Theo dõi thiết bị và tình trạng sửa chữa của bạn."
+                : "Tổng quan nhanh các phiếu sửa chữa đang cần xử lý.")
+        </p>
+    </div>
+    <div class="page-actions">
+        @if (laKhach)
+        {
+            @if (!Model.ThieuHoSoKhachHang)
+            {
+                <a asp-controller="PhieuSuaChua" asp-action="Create" class="btn btn-accent">
+                    <i class="bi bi-plus-lg me-1"></i>Tạo phiếu sửa chữa
+                </a>
+            }
+            <a asp-controller="ThietBi" asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-pc-display me-1"></i>Thiết bị của tôi
+            </a>
+        }
+        else
+        {
+            <a asp-controller="PhieuSuaChua" asp-action="Index" class="btn btn-primary">
+                <i class="bi bi-tools me-1"></i>Phiếu sửa chữa
+            </a>
+            <a asp-controller="KhachHang" asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-people me-1"></i>Khách hàng
+            </a>
+            <a asp-controller="ThietBi" asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-pc-display me-1"></i>Thiết bị
+            </a>
+        }
+    </div>
+</div>
+
+@if (Model.ThieuHoSoKhachHang)
+{
+    <div class="card">
+        <div class="card-body empty-state text-center">
+            <i class="bi bi-person-exclamation fs-2 d-block mb-2"></i>
+            <h3>Tài khoản chưa có hồ sơ khách hàng</h3>
+            <p class="text-secondary mb-0">Vui lòng liên hệ nhân viên để được tạo hồ sơ trước khi đăng ký sửa chữa.</p>
+        </div>
+    </div>
+    return;
+}
+
+@* ===== 4 ô số liệu ===== *@
+<div class="row g-3 mb-4">
+    @if (laKhach)
+    {
+        <div class="col-sm-6 col-xl-3">
+            <div class="card kpi-card">
+                <span class="kpi-icon"><i class="bi bi-pc-display"></i></span>
+                <span class="kpi-label">Thiết bị của tôi</span>
+                <span class="kpi-value">@Model.So1</span>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card kpi-card">
+                <span class="kpi-icon"><i class="bi bi-hourglass-split"></i></span>
+                <span class="kpi-label">Phiếu đang xử lý</span>
+                <span class="kpi-value">@Model.So2</span>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card kpi-card @(Model.So3 > 0 ? "is-warning" : "")">
+                <span class="kpi-icon"><i class="bi bi-shield-exclamation"></i></span>
+                <span class="kpi-label">Sắp hết bảo hành (≤ @UiHelper.NgayCanhBaoBaoHanh ngày)</span>
+                <span class="kpi-value">@Model.So3</span>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card kpi-card">
+                <span class="kpi-icon"><i class="bi bi-check2-circle"></i></span>
+                <span class="kpi-label">Phiếu đã hoàn thành</span>
+                <span class="kpi-value">@Model.So4</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="col-sm-6 col-xl-3">
+            <div class="card kpi-card @(Model.So1 > 0 ? "is-warning" : "")">
+                <span class="kpi-icon"><i class="bi bi-inbox"></i></span>
+                <span class="kpi-label">Phiếu chờ xử lý</span>
+                <span class="kpi-value">@Model.So1</span>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card kpi-card">
+                <span class="kpi-icon"><i class="bi bi-gear-wide-connected"></i></span>
+                <span class="kpi-label">Phiếu đang xử lý</span>
+                <span class="kpi-value">@Model.So2</span>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card kpi-card @(Model.So3 > 0 ? "is-danger" : "")">
+                <span class="kpi-icon"><i class="bi bi-alarm"></i></span>
+                <span class="kpi-label">Phiếu quá hạn</span>
+                <span class="kpi-value">@Model.So3</span>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card kpi-card">
+                <span class="kpi-icon"><i class="bi bi-people"></i></span>
+                <span class="kpi-label">Khách hàng đang hoạt động</span>
+                <span class="kpi-value">@Model.So4</span>
+            </div>
+        </div>
+    }
+</div>
+
+@* ===== Thiết bị sắp hết bảo hành (chỉ khách hàng, chỉ hiện khi có) ===== *@
+@if (laKhach && Model.ThietBiSapHetBaoHanh.Any())
+{
+    <h3 class="h6 mb-2">Thiết bị sắp hết bảo hành</h3>
+    <div class="table-card mb-4">
+        <table class="data-table">
+            <thead>
+                <tr><th>Thiết bị</th><th>Hạn bảo hành</th><th>Bảo hành</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var t in Model.ThietBiSapHetBaoHanh)
+                {
+                    <tr>
+                        <td>
+                            <div class="cell-title">@t.TenThietBi</div>
+                            <div class="cell-sub mono">@t.SerialNumber</div>
+                        </td>
+                        <td>@UiHelper.Ngay(t.HanBaoHanh)</td>
+                        <td><partial name="_StatusBadge" model="UiHelper.BaoHanh(t.HanBaoHanh)" /></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@* ===== Phiếu gần đây ===== *@
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <h3 class="h6 mb-0">@(laKhach ? "Phiếu sửa chữa gần đây của tôi" : "Phiếu sửa chữa mới nhất")</h3>
+    <a asp-controller="PhieuSuaChua" asp-action="Index" class="small">Xem tất cả</a>
+</div>
+
+@if (!Model.PhieuGanDay.Any())
+{
+    <div class="card">
+        <div class="card-body empty-state text-center">
+            <i class="bi bi-clipboard2-check fs-2 d-block mb-2"></i>
+            <h3>Chưa có phiếu sửa chữa nào</h3>
+            @if (laKhach)
+            {
+                <p class="text-secondary mb-0">Khi thiết bị gặp sự cố, bấm “Tạo phiếu sửa chữa” để gửi yêu cầu.</p>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="table-card">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Mã phiếu</th>
+                    @if (!laKhach) { <th>Khách hàng</th> }
+                    <th>Thiết bị</th>
+                    <th>Ngày tiếp nhận</th>
+                    <th>Trạng thái</th>
+                    <th>Hạn dự kiến</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model.PhieuGanDay)
+                {
+                    <tr class="@UiHelper.HangMo(p.TrangThai)">
+                        <td class="mono">@UiHelper.Ma("PSC", p.MaPhieu)</td>
+                        @if (!laKhach) { <td>@p.KhachHang?.HoTen</td> }
+                        <td>
+                            <div class="cell-title">@p.ThietBi?.TenThietBi</div>
+                            <div class="cell-sub mono">@p.ThietBi?.SerialNumber</div>
+                        </td>
+                        <td>@UiHelper.NgayGio(p.NgayTiepNhan)</td>
+                        <td><partial name="_StatusBadge" model="UiHelper.Badge(p.TrangThai)" /></td>
+                        <td>
+                            @UiHelper.Ngay(p.HanDuKien)
+                            @if (UiHelper.HanDuKien(p.HanDuKien, p.TrangThai) is { } han)
+                            {
+                                <partial name="_StatusBadge" model="han" />
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
