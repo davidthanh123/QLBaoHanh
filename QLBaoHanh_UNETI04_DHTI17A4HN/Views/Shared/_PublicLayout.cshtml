@@ -1,0 +1,49 @@
+@* Họ và tên: David Thành *@
+@* Mã sinh viên: 23103100239 *@
+@* Nội dung thực hiện: Layout cho trang giới thiệu công khai (chưa đăng nhập): thanh trên cùng + nút Đăng nhập, không sidebar. *@
+@* Dùng trong View: @{ Layout = "_PublicLayout"; ViewData["Title"] = "..."; } *@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@(ViewData["Title"] is string t && t.Length > 0 ? t + " - " : "")QLBaoHanh</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/landing.css" asp-append-version="true" />
+</head>
+<body class="lp-body">
+    <header class="lp-header">
+        <div class="lp-container lp-header-inner">
+            <a class="lp-brand" asp-controller="Home" asp-action="Index">
+                <i class="bi bi-shield-check"></i>
+                <span>QLBaoHanh</span>
+            </a>
+            <nav class="lp-nav" aria-label="Điều hướng chính">
+                <a href="#tinh-nang">Tính năng</a>
+                <a href="#quy-trinh">Quy trình</a>
+                <a href="#danh-muc">Danh mục thiết bị</a>
+            </nav>
+            <a asp-controller="TaiKhoan" asp-action="DangNhap" class="btn lp-btn-light">
+                <i class="bi bi-box-arrow-in-right me-1"></i>Đăng nhập
+            </a>
+        </div>
+    </header>
+
+    <main role="main">
+        @RenderBody()
+    </main>
+
+    <footer class="lp-footer">
+        <div class="lp-container">
+            <div class="lp-footer-brand"><i class="bi bi-shield-check"></i> QLBaoHanh</div>
+            <p>Hệ thống quản lý bảo hành và sửa chữa thiết bị · Đề tài 17 · UNETI04 · DHTI17A4HN</p>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
