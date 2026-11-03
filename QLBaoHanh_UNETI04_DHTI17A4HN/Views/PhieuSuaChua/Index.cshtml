@@ -1,19 +1,28 @@
-@* Họ và tên: [điền họ tên của bạn] *@
+﻿@* Họ và tên: [điền họ tên của bạn] *@
 @* Mã sinh viên: [điền mã sinh viên của bạn] *@
 @* Nội dung thực hiện: Module 4 - danh sách xử lý, tìm kiếm, lọc và phân trang phiếu. *@
 @model PhieuSuaChuaDanhSachViewModel
+@using QLBaoHanh_UNETI04_DHTI17A4HN.Helpers
+@using QLBaoHanh_UNETI04_DHTI17A4HN.Models.Enums
 @{
-    ViewData["Title"] = "Tiếp nhận và xử lý phiếu";
+    var laKhachHang = Context.Session.LayVaiTro() == VaiTroEnum.KhachHang;
+    ViewData["Title"] = laKhachHang ? "Phiếu sửa chữa của tôi" : "Tiếp nhận và xử lý phiếu";
     var loaiThietBis = ViewBag.LoaiThietBis as IEnumerable<LoaiThietBi> ?? Enumerable.Empty<LoaiThietBi>();
 }
 
 <section class="container-fluid px-0">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
-            <h2 class="h4 mb-1">Phiếu cần xử lý</h2>
+            <h2 class="h4 mb-1">@(laKhachHang ? "Phiếu sửa chữa của tôi" : "Phiếu cần xử lý")</h2>
             <p class="text-muted mb-0">Tìm kiếm, lọc và theo dõi tiến độ tiếp nhận sửa chữa.</p>
         </div>
-        <span class="badge text-bg-secondary">@Model.TongSoPhieu phiếu</span>
+        <div class="d-flex align-items-center gap-2">
+            @if (laKhachHang)
+            {
+                <a asp-action="Create" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Tạo phiếu sửa chữa</a>
+            }
+            <span class="badge text-bg-secondary">@Model.TongSoPhieu phiếu</span>
+        </div>
     </div>
 
     <form asp-action="Index" method="get" class="card card-body mb-3">
@@ -70,14 +79,14 @@
         <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
                 <tr>
-                    <th>Mã phiếu</th><th>Khách hàng</th><th>Thiết bị</th><th>Loại</th>
+                    <th>Mã phiếu</th>@if (!laKhachHang) { <th>Khách hàng</th> }<th>Thiết bị</th><th>Loại</th>
                     <th>Ngày tiếp nhận</th><th>Trạng thái</th><th></th>
                 </tr>
             </thead>
             <tbody>
             @if (Model.PhieuSuaChuas.Count == 0)
             {
-                <tr><td colspan="7" class="text-center text-muted py-4">Không tìm thấy phiếu phù hợp.</td></tr>
+                <tr><td colspan="@(laKhachHang ? 6 : 7)" class="text-center text-muted py-4">Không tìm thấy phiếu phù hợp.</td></tr>
             }
             else
             {
@@ -85,12 +94,24 @@
                 {
                     <tr>
                         <td class="fw-semibold">@UiHelper.Ma("PSC", p.MaPhieu)</td>
-                        <td>@p.KhachHang?.HoTen<br /><small class="text-muted">@p.KhachHang?.SoDienThoai</small></td>
+                        @if (!laKhachHang)
+                        {
+                            <td>@p.KhachHang?.HoTen<br /><small class="text-muted">@p.KhachHang?.SoDienThoai</small></td>
+                        }
                         <td>@p.ThietBi?.TenThietBi<br /><small class="text-muted">SN: @p.ThietBi?.SerialNumber</small></td>
                         <td>@p.ThietBi?.LoaiThietBi?.TenLoai</td>
                         <td>@UiHelper.NgayGio(p.NgayTiepNhan)</td>
                         <td><partial name="_StatusBadge" model="UiHelper.Badge(p.TrangThai)" /></td>
-                        <td class="text-end"><a asp-action="Details" asp-route-id="@p.MaPhieu" class="btn btn-sm btn-outline-primary">Chi tiết</a></td>
+                        <td class="text-end">
+                            @if (!laKhachHang)
+                            {
+                                <a asp-action="Details" asp-route-id="@p.MaPhieu" class="btn btn-sm btn-outline-primary">Chi tiết</a>
+                            }
+                            else if (p.TrangThai == TrangThaiPhieuEnum.ChoXuLy)
+                            {
+                                <a asp-action="Huy" asp-route-id="@p.MaPhieu" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-circle me-1"></i>Hủy</a>
+                            }
+                        </td>
                     </tr>
                 }
             }

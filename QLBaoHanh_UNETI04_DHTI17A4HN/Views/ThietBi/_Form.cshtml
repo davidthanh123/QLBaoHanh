@@ -1,0 +1,90 @@
+@*
+   Họ và tên: Đào Hoàng Thành
+   Mã sinh viên: 23103100223
+   Nội dung thực hiện: Module 2 - Form dùng chung cho Thêm và Sửa thiết bị.
+*@
+@model ThietBi
+@{
+    var laSua = Model.MaThietBi > 0;
+    var dsLoai = (List<LoaiThietBi>)ViewBag.DsLoai;
+    var dsKhachHang = (List<KhachHang>)ViewBag.DsKhachHang;
+}
+
+<form method="post" action="@(laSua ? Url.Action("Edit", new { id = Model.MaThietBi }) : Url.Action("Create"))">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="MaThietBi" />
+    <div asp-validation-summary="ModelOnly"></div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="TenThietBi" class="form-label required"></label>
+                    <input asp-for="TenThietBi" class="form-control" maxlength="150" />
+                    <span asp-validation-for="TenThietBi"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="SerialNumber" class="form-label required"></label>
+                    <input asp-for="SerialNumber" class="form-control mono" maxlength="100" />
+                    <span asp-validation-for="SerialNumber"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="MaLoai" class="form-label required"></label>
+                    <select asp-for="MaLoai" class="form-select">
+                        <option value="">-- Chọn loại thiết bị --</option>
+                        @foreach (var l in dsLoai)
+                        {
+                            <option value="@l.MaLoai" data-bh="@l.ThoiHanBaoHanhMacDinh" selected="@(Model.MaLoai == l.MaLoai)">@l.TenLoai (@l.HangSanXuat)</option>
+                        }
+                    </select>
+                    <span asp-validation-for="MaLoai"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="MaKhachHang" class="form-label required"></label>
+                    <select asp-for="MaKhachHang" class="form-select">
+                        <option value="">-- Chọn khách hàng --</option>
+                        @foreach (var k in dsKhachHang)
+                        {
+                            <option value="@k.MaKhachHang" selected="@(Model.MaKhachHang == k.MaKhachHang)">@k.HoTen - @k.SoDienThoai</option>
+                        }
+                    </select>
+                    <span asp-validation-for="MaKhachHang"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="NgayMua" class="form-label required"></label>
+                    <input asp-for="NgayMua" type="date" class="form-control" />
+                    <span asp-validation-for="NgayMua"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="HanBaoHanh" class="form-label required"></label>
+                    <input asp-for="HanBaoHanh" type="date" class="form-control" />
+                    <div class="form-text">Gợi ý = ngày mua + thời hạn mặc định của loại, vẫn có thể sửa tay.</div>
+                    <span asp-validation-for="HanBaoHanh"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="GiaTri" class="form-label"></label>
+                    <input asp-for="GiaTri" type="number" min="0" step="1000" class="form-control num" />
+                    <span asp-validation-for="GiaTri"></span>
+                </div>
+
+                <div class="col-12">
+                    <label asp-for="MoTa" class="form-label"></label>
+                    <textarea asp-for="MoTa" class="form-control" rows="2" maxlength="500"></textarea>
+                    <span asp-validation-for="MoTa"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="GhiChu" class="form-label"></label>
+                    <textarea asp-for="GhiChu" class="form-control" rows="2" maxlength="500"></textarea>
+                    <span asp-validation-for="GhiChu"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <a class="btn btn-outline-secondary" asp-action="Index">Hủy</a>
+        <button type="submit" class="btn btn-primary">@(laSua ? "Lưu thay đổi" : "Lưu thiết bị")</button>
+    </div>
+</form>

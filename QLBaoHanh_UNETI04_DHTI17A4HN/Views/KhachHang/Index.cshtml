@@ -1,5 +1,52 @@
-﻿@{
-    ViewData["Title"] = "Khách hàng";
+﻿@model IEnumerable<QLBaoHanh_UNETI04_DHTI17A4HN.Models.KhachHang>
+@using QLBaoHanh_UNETI04_DHTI17A4HN.Helpers
+@using QLBaoHanh_UNETI04_DHTI17A4HN.Models.Enums
+@{
+    ViewData["Title"] = "Quản lý khách hàng";
 }
-
-<p class="text-muted">Trang Khách hàng đang được xây dựng.</p>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div><h2 class="h4 mb-1">Danh sách khách hàng</h2><div class="text-secondary">Tra cứu hồ sơ và trạng thái khách hàng</div></div>
+    <span class="badge text-bg-primary fs-6">@Model.Count() khách hàng</span>
+</div>
+<form method="get" class="card card-body border-0 shadow-sm mb-3">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-7">
+            <label class="form-label" for="tuKhoa">Từ khóa</label>
+            <input class="form-control" id="tuKhoa" name="tuKhoa" value="@ViewBag.TuKhoa" placeholder="Tên, số điện thoại, email hoặc CCCD..." />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label" for="trangThai">Trạng thái</label>
+            <select class="form-select" id="trangThai" name="trangThai">
+                <option value="">Tất cả</option>
+                <option value="true" selected="@(ViewBag.TrangThai is true)">Hoạt động</option>
+                <option value="false" selected="@(ViewBag.TrangThai is false)">Ngừng hoạt động</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button class="btn btn-primary flex-grow-1" type="submit"><i class="bi bi-search"></i> Tìm</button>
+            <a class="btn btn-outline-secondary" asp-action="Index" title="Xóa lọc"><i class="bi bi-arrow-counterclockwise"></i></a>
+        </div>
+    </div>
+</form>
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light"><tr><th>Mã KH</th><th>Khách hàng</th><th>Liên hệ</th><th>Loại</th><th>Tài khoản</th><th>Trạng thái</th><th>Ngày tạo</th></tr></thead>
+            <tbody>
+            @foreach (var kh in Model)
+            {
+                <tr>
+                    <td class="fw-semibold">@UiHelper.Ma("KH", kh.MaKhachHang)</td>
+                    <td><div class="fw-semibold">@kh.HoTen</div><small class="text-secondary">CCCD: @(kh.CCCD ?? "—")</small></td>
+                    <td><div>@kh.SoDienThoai</div><small class="text-secondary">@(kh.Email ?? "Chưa có email")</small></td>
+                    <td><span class="badge text-bg-light border">@UiHelper.Badge(kh.LoaiKhachHang).Text</span></td>
+                    <td>@(kh.TaiKhoan?.TenDangNhap ?? "Chưa liên kết")</td>
+                    <td><span class="badge @(kh.TrangThai ? "text-bg-success" : "text-bg-secondary")">@(kh.TrangThai ? "Hoạt động" : "Ngừng hoạt động")</span></td>
+                    <td>@UiHelper.Ngay(kh.NgayTao)</td>
+                </tr>
+            }
+            @if (!Model.Any()) { <tr><td colspan="7" class="text-center text-secondary py-5">Không tìm thấy khách hàng phù hợp.</td></tr> }
+            </tbody>
+        </table>
+    </div>
+</div>

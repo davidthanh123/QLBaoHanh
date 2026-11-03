@@ -2,4 +2,123 @@
     ViewData["Title"] = "Dashboard";
 }
 
-<p class="text-muted">Trang Dashboard đang được xây dựng.</p>
+<div class="container-fluid py-4">
+    <h2 class="mb-1">Tổng quan hệ thống</h2>
+    <p class="text-muted mb-4">
+        Thống kê tình hình hoạt động của hệ thống quản lý bảo hành.
+    </p>
+
+    <div class="row g-3">
+        <div class="col-md-4 col-xl-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="text-muted">Khách hàng</div>
+                    <h2 class="text-primary mt-2">
+                        @ViewBag.TongKhachHang
+                    </h2>
+                    <a asp-controller="KhachHang"
+                       asp-action="Index"
+                       class="text-decoration-none">
+                        Quản lý khách hàng →
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 col-xl-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="text-muted">Thiết bị</div>
+                    <h2 class="text-success mt-2">
+                        @ViewBag.TongThietBi
+                    </h2>
+                    <a asp-controller="ThietBi"
+                       asp-action="Index"
+                       class="text-decoration-none">
+                        Quản lý thiết bị →
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 col-xl-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="text-muted">Phiếu sửa chữa</div>
+                    <h2 class="text-warning mt-2">
+                        @ViewBag.TongPhieuSuaChua
+                    </h2>
+                    <a asp-controller="PhieuSuaChua"
+                       asp-action="Index"
+                       class="text-decoration-none">
+                        Quản lý phiếu →
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 col-xl-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="text-muted">Linh kiện</div>
+                    <h2 class="text-danger mt-2">
+                        @ViewBag.TongLinhKien
+                    </h2>
+                    <a asp-controller="LinhKien"
+                       asp-action="Index"
+                       class="text-decoration-none">
+                        Quản lý linh kiện →
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 col-xl-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="text-muted">Kỹ thuật viên</div>
+                    <h2 class="mt-2">
+                        @ViewBag.TongKyThuatVien
+                    </h2>
+                    <a asp-controller="KyThuatVien"
+                       asp-action="Index"
+                       class="text-decoration-none">
+                        Quản lý kỹ thuật viên →
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 col-xl-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="text-muted">Chi tiết sửa chữa</div>
+                    <h2 class="mt-2">
+                        @ViewBag.TongChiTietSuaChua
+                    </h2>
+                    <a asp-controller="ChiTietSuaChua"
+                       asp-action="Index"
+                       class="text-decoration-none">
+                        Xem chi tiết →
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8 col-xl-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="text-muted">
+                        Tổng giá trị chi tiết sửa chữa
+                    </div>
+                    <h2 class="text-success mt-2">
+                       @(((decimal?)ViewBag.TongGiaTriSuaChua ?? 0m).ToString("N0")) VNĐ
+                    </h2>
+                    <p class="text-muted mb-0">
+                        Tổng thành tiền của các chi tiết sửa chữa đã lưu.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

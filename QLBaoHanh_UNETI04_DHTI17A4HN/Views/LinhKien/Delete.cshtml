@@ -1,0 +1,61 @@
+
+@model QLBaoHanh_UNETI04_DHTI17A4HN.Models.LinhKien
+
+@{
+    ViewData["Title"] = "Xóa linh kiện";
+}
+
+<div class="container-fluid py-3">
+    <h2 class="text-danger">Xóa linh kiện</h2>
+    <p class="text-muted">Kiểm tra thông tin trước khi xác nhận xóa.</p>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-danger text-white">
+            Xác nhận xóa linh kiện #@Model.MaLinhKien
+        </div>
+
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <strong>Lưu ý:</strong> Không thể xóa linh kiện đã được sử dụng
+                trong phiếu sửa chữa.
+            </div>
+
+            <dl class="row">
+                <dt class="col-sm-3">Mã linh kiện</dt>
+                <dd class="col-sm-9">@Model.MaLinhKien</dd>
+
+                <dt class="col-sm-3">Tên linh kiện</dt>
+                <dd class="col-sm-9">@Model.TenLinhKien</dd>
+
+                <dt class="col-sm-3">Đơn vị tính</dt>
+                <dd class="col-sm-9">@Model.DonViTinh</dd>
+
+                <dt class="col-sm-3">Đơn giá</dt>
+                <dd class="col-sm-9">@Model.DonGia.ToString("N0") đ</dd>
+
+                <dt class="col-sm-3">Số lượng tồn</dt>
+                <dd class="col-sm-9">@Model.SoLuongTon</dd>
+
+                <dt class="col-sm-3">Trạng thái</dt>
+                <dd class="col-sm-9">
+                    @(Model.TrangThai ? "Đang hoạt động" : "Ngừng hoạt động")
+                </dd>
+            </dl>
+
+            <form asp-action="Delete" asp-route-id="@Model.MaLinhKien" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="MaLinhKien" />
+
+                <button type="submit" class="btn btn-danger"
+                        onclick="return confirm('Bạn chắc chắn muốn xóa linh kiện này?');">
+                    Xác nhận xóa
+                </button>
+
+                <a asp-action="Index" class="btn btn-secondary">
+                    Hủy
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
