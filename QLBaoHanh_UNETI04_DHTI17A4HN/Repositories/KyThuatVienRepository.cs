@@ -10,6 +10,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Repositories
         Task<bool> KiemTraTaiKhoanDaCoHoSoAsync(int maTaiKhoan, int? excludeMaKtv = null);
         Task<List<KyThuatVien>> LayDanhSachHoatDongAsync();
         Task<KyThuatVien?> LayChiTietKemTaiKhoanAsync(int maKyThuatVien);
+        Task<KyThuatVien?> LayTheoTaiKhoanAsync(int maTaiKhoan);
     }
 
     public class KyThuatVienRepository : Repository<KyThuatVien>, IKyThuatVienRepository
@@ -51,5 +52,15 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Repositories
         public Task<KyThuatVien?> LayChiTietKemTaiKhoanAsync(int maKyThuatVien) =>
             _dbSet.Include(k => k.TaiKhoan)
                 .FirstOrDefaultAsync(k => k.MaKyThuatVien == maKyThuatVien && k.TrangThai && k.TaiKhoan != null && k.TaiKhoan.TrangThai);
+
+                // Lấy hồ sơ kỹ thuật viên theo mã tài khoản đăng nhập
+public Task<KyThuatVien?> LayTheoTaiKhoanAsync(int maTaiKhoan) =>
+    _dbSet.AsNoTracking()
+        .FirstOrDefaultAsync(k =>
+            k.MaTaiKhoan == maTaiKhoan &&
+            k.TrangThai &&
+            k.TaiKhoan != null &&
+            k.TaiKhoan.TrangThai);
     }
+    
 }

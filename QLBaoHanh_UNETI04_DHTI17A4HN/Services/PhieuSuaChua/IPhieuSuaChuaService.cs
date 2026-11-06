@@ -5,6 +5,8 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models.Enums;
 using QLBaoHanh_UNETI04_DHTI17A4HN.ViewModels;
+using System.Collections.Generic;
+using QLBaoHanh_UNETI04_DHTI17A4HN.Models;
 
 namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
 {
@@ -27,5 +29,7 @@ Task<KetQuaDichVu> TaoPhieuAsync(
     bool modelHopLe);
         Task<KetQuaDichVu> KiemTraCoTheHuyAsync(int maPhieu, int? maTaiKhoan, VaiTroEnum? vaiTro);
         Task<KetQuaDichVu> HuyPhieuAsync(HuyPhieuViewModel model, int? maTaiKhoan, VaiTroEnum? vaiTro, bool modelHopLe);
+        // Lấy danh sách phiếu sửa chữa được giao cho kỹ thuật viên
+Task<List<PhieuSuaChua>> LayDanhSachTheoKyThuatVienAsync(int maKyThuatVien);
     }
 }

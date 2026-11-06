@@ -89,6 +89,10 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
             ktv.TrangThai = model.TrangThai;
             await _uow.SaveChangesAsync();
             return KetQuaDichVu.Ok("Đã cập nhật hồ sơ kỹ thuật viên.").Kem(taiKhoanCu);
+            
         }
+        public Task<KyThuatVien?> LayTheoTaiKhoanAsync(int maTaiKhoan) =>
+    _uow.KyThuatViens.LayTheoTaiKhoanAsync(maTaiKhoan);
     }
+    
 }

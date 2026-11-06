@@ -359,5 +359,9 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
                 (TrangThaiPhieuEnum.DangXuLy, TrangThaiPhieuEnum.Huy) => true,
                 _ => false
             };
+            public async Task<List<PhieuSuaChua>> LayDanhSachTheoKyThuatVienAsync(int maKyThuatVien)
+{
+    return await _uow.PhieuSuaChuas.LayDanhSachTheoKyThuatVienAsync(maKyThuatVien);
+}
     }
 }

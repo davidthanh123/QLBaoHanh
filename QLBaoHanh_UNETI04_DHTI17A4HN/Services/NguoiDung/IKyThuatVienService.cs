@@ -20,5 +20,8 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
 
         // DuLieu = MaTaiKhoan hiện đang gắn với hồ sơ (trước khi sửa), để Controller nạp lại dropdown khi form lỗi.
         Task<KetQuaDichVu<int>> CapNhatAsync(int id, KyThuatVienViewModel model, bool modelHopLe);
+
+// Lấy hồ sơ kỹ thuật viên theo tài khoản đăng nhập
+Task<KyThuatVien?> LayTheoTaiKhoanAsync(int maTaiKhoan);
     }
 }

@@ -17,6 +17,8 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Repositories
         Task<PhieuSuaChua?> LayPhieuTheoNguoiDungAsync(int maPhieu, int? maKhachHang);
         Task<bool> KiemTraThietBiCoPhieuDangMoAsync(int maThietBi, int? excludeMaPhieu = null);
         Task<bool> KiemTraThietBiCoPhieuMoHoacDangSuaAsync(int maThietBi);
+        // Lấy danh sách phiếu sửa chữa theo kỹ thuật viên được phân công
+Task<List<PhieuSuaChua>> LayDanhSachTheoKyThuatVienAsync(int maKyThuatVien);
     }
 
     public class PhieuSuaChuaRepository : Repository<PhieuSuaChua>, IPhieuSuaChuaRepository
@@ -115,5 +117,13 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Repositories
         public Task<bool> KiemTraThietBiCoPhieuMoHoacDangSuaAsync(int maThietBi) =>
             _dbSet.AnyAsync(p => p.MaThietBi == maThietBi &&
                 (p.TrangThai == TrangThaiPhieuEnum.ChoXuLy || p.TrangThai == TrangThaiPhieuEnum.DangXuLy));
+                // Lấy danh sách phiếu sửa chữa theo kỹ thuật viên được phân công
+public Task<List<PhieuSuaChua>> LayDanhSachTheoKyThuatVienAsync(int maKyThuatVien) =>
+    _dbSet.AsNoTracking()
+        .Include(p => p.KhachHang)
+        .Include(p => p.ThietBi)
+        .Where(p => p.ChiTietSuaChuas.Any(c => c.MaKyThuatVien == maKyThuatVien))
+        .OrderByDescending(p => p.NgayTiepNhan)
+        .ToListAsync();
     }
 }
