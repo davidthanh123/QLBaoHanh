@@ -1,5 +1,10 @@
-﻿@{
+﻿
+@{
     ViewData["Title"] = "Dashboard";
+
+    var trangThai = ViewBag.TheoTrangThai;
+    var loaiThietBi = ViewBag.TheoLoaiThietBi;
+    var kyThuatVien = ViewBag.TheoKyThuatVien;
 }
 
 <div class="container-fluid py-4">
@@ -8,17 +13,15 @@
         Thống kê tình hình hoạt động của hệ thống quản lý bảo hành.
     </p>
 
+    <!-- THỐNG KÊ TỔNG QUAN -->
     <div class="row g-3">
+
         <div class="col-md-4 col-xl-3">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
                     <div class="text-muted">Khách hàng</div>
-                    <h2 class="text-primary mt-2">
-                        @ViewBag.TongKhachHang
-                    </h2>
-                    <a asp-controller="KhachHang"
-                       asp-action="Index"
-                       class="text-decoration-none">
+                    <h2 class="text-primary mt-2">@ViewBag.TongKhachHang</h2>
+                    <a asp-controller="KhachHang" asp-action="Index">
                         Quản lý khách hàng →
                     </a>
                 </div>
@@ -29,12 +32,8 @@
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
                     <div class="text-muted">Thiết bị</div>
-                    <h2 class="text-success mt-2">
-                        @ViewBag.TongThietBi
-                    </h2>
-                    <a asp-controller="ThietBi"
-                       asp-action="Index"
-                       class="text-decoration-none">
+                    <h2 class="text-success mt-2">@ViewBag.TongThietBi</h2>
+                    <a asp-controller="ThietBi" asp-action="Index">
                         Quản lý thiết bị →
                     </a>
                 </div>
@@ -45,12 +44,8 @@
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
                     <div class="text-muted">Phiếu sửa chữa</div>
-                    <h2 class="text-warning mt-2">
-                        @ViewBag.TongPhieuSuaChua
-                    </h2>
-                    <a asp-controller="PhieuSuaChua"
-                       asp-action="Index"
-                       class="text-decoration-none">
+                    <h2 class="text-warning mt-2">@ViewBag.TongPhieuSuaChua</h2>
+                    <a asp-controller="PhieuSuaChua" asp-action="Index">
                         Quản lý phiếu →
                     </a>
                 </div>
@@ -61,12 +56,8 @@
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
                     <div class="text-muted">Linh kiện</div>
-                    <h2 class="text-danger mt-2">
-                        @ViewBag.TongLinhKien
-                    </h2>
-                    <a asp-controller="LinhKien"
-                       asp-action="Index"
-                       class="text-decoration-none">
+                    <h2 class="text-danger mt-2">@ViewBag.TongLinhKien</h2>
+                    <a asp-controller="LinhKien" asp-action="Index">
                         Quản lý linh kiện →
                     </a>
                 </div>
@@ -77,12 +68,8 @@
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
                     <div class="text-muted">Kỹ thuật viên</div>
-                    <h2 class="mt-2">
-                        @ViewBag.TongKyThuatVien
-                    </h2>
-                    <a asp-controller="KyThuatVien"
-                       asp-action="Index"
-                       class="text-decoration-none">
+                    <h2 class="mt-2">@ViewBag.TongKyThuatVien</h2>
+                    <a asp-controller="KyThuatVien" asp-action="Index">
                         Quản lý kỹ thuật viên →
                     </a>
                 </div>
@@ -93,12 +80,8 @@
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
                     <div class="text-muted">Chi tiết sửa chữa</div>
-                    <h2 class="mt-2">
-                        @ViewBag.TongChiTietSuaChua
-                    </h2>
-                    <a asp-controller="ChiTietSuaChua"
-                       asp-action="Index"
-                       class="text-decoration-none">
+                    <h2 class="mt-2">@ViewBag.TongChiTietSuaChua</h2>
+                    <a asp-controller="ChiTietSuaChua" asp-action="Index">
                         Xem chi tiết →
                     </a>
                 </div>
@@ -108,17 +91,193 @@
         <div class="col-md-8 col-xl-6">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
-                    <div class="text-muted">
-                        Tổng giá trị chi tiết sửa chữa
-                    </div>
+                    <div class="text-muted">Tổng giá trị sửa chữa</div>
                     <h2 class="text-success mt-2">
-                       @(((decimal?)ViewBag.TongGiaTriSuaChua ?? 0m).ToString("N0")) VNĐ
+                        @(((decimal?)ViewBag.TongGiaTriSuaChua ?? 0m).ToString("N0")) VNĐ
                     </h2>
                     <p class="text-muted mb-0">
-                        Tổng thành tiền của các chi tiết sửa chữa đã lưu.
+                        Tổng thành tiền của các chi tiết sửa chữa.
                     </p>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- HIỆU SUẤT SỬA CHỮA -->
+    <h4 class="mt-5 mb-3">Hiệu suất sửa chữa</h4>
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted">
+                        Thời gian sửa chữa trung bình
+                    </div>
+                    <h2 class="text-primary mt-2">
+                        @(((decimal?)ViewBag.ThoiGianSuaChuaTrungBinh ?? 0m).ToString("N1"))
+                        ngày
+                    </h2>
+                    <small class="text-muted">
+                        Chỉ tính các phiếu đã hoàn thành.
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted">
+                        Tỷ lệ sửa chữa còn bảo hành
+                    </div>
+
+                    @{
+                        decimal tyLe = (decimal?)ViewBag.TyLeSuaChuaBaoHanh ?? 0m;
+                        tyLe = Math.Clamp(tyLe, 0m, 100m);
+                    }
+
+                    <h2 class="text-success mt-2">
+                        @tyLe.ToString("N1")%
+                    </h2>
+
+                    <div class="progress mt-3" style="height: 12px;">
+                        <div class="progress-bar bg-success"
+                             role="progressbar"
+                             style="width: @tyLe%">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- THỐNG KÊ CHI TIẾT -->
+    <h4 class="mt-5 mb-3">Thống kê chi tiết</h4>
+
+    <div class="row g-3">
+
+        <!-- THEO TRẠNG THÁI -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <strong>Phiếu theo trạng thái</strong>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Trạng thái</th>
+                                    <th class="text-end">Số lượng</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (trangThai != null && trangThai.Count > 0)
+                                {
+                                    foreach (var item in trangThai)
+                                    {
+                                        <tr>
+                                            <td>@item.TrangThai</td>
+                                            <td class="text-end">@item.SoLuong</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="2" class="text-center text-muted">
+                                            Chưa có dữ liệu
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- THEO LOẠI THIẾT BỊ -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <strong>Thiết bị theo loại</strong>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Loại thiết bị</th>
+                                    <th class="text-end">Số lượng</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (loaiThietBi != null && loaiThietBi.Count > 0)
+                                {
+                                    foreach (var item in loaiThietBi)
+                                    {
+                                        <tr>
+                                            <td>@item.TenLoai</td>
+                                            <td class="text-end">@item.SoLuong</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="2" class="text-center text-muted">
+                                            Chưa có dữ liệu
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- THEO KỸ THUẬT VIÊN -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <strong>Phiếu theo kỹ thuật viên</strong>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Kỹ thuật viên</th>
+                                    <th class="text-end">Số phiếu</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (kyThuatVien != null && kyThuatVien.Count > 0)
+                                {
+                                    foreach (var item in kyThuatVien)
+                                    {
+                                        <tr>
+                                            <td>@item.HoTen</td>
+                                            <td class="text-end">@item.SoPhieu</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="2" class="text-center text-muted">
+                                            Chưa có dữ liệu
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>

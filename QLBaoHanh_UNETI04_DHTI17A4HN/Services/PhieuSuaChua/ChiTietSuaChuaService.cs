@@ -64,7 +64,10 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
         public async Task<KetQuaDichVu> ThemAsync(ChiTietSuaChua model, bool modelHopLe)
         {
             var loi = new List<LoiTruongNhap>();
-
+            if (model.SoLuong <= 0)
+            {
+                loi.Add(new(nameof(model.SoLuong), "Số lượng phải lớn hơn 0."));
+            }
             // Kiểm tra linh kiện nếu có sử dụng
             LinhKien? linhKien = null;
             if (model.MaLinhKien.HasValue)
@@ -113,7 +116,10 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
             if (chiTietCu == null) return KetQuaDichVu.KhongTimThay();
 
             var loi = new List<LoiTruongNhap>();
-
+            if (model.SoLuong <= 0)
+            {
+                loi.Add(new(nameof(model.SoLuong), "Số lượng phải lớn hơn 0."));
+            }
             // Lấy linh kiện mới nếu có sử dụng
             LinhKien? linhKienMoi = null;
             if (model.MaLinhKien.HasValue)

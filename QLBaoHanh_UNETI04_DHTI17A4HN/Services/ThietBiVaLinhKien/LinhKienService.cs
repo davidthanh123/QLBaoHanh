@@ -59,41 +59,68 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
             return KetQuaDichVu.Ok("Thêm linh kiện thành công.");
         }
 
-        public async Task<KetQuaDichVu> CapNhatAsync(int id, LinhKien linhKien, bool modelHopLe)
+        
+public async Task<KetQuaDichVu> CapNhatAsync(int id, LinhKien linhKien, bool modelHopLe)
+{
+    var loi = new List<LoiTruongNhap>();
+
+    if (await _db.LinhKiens.AnyAsync(l =>
+        l.MaLinhKien != id &&
+        l.TenLinhKien == linhKien.TenLinhKien))
+    {
+        loi.Add(new(nameof(linhKien.TenLinhKien), LoiTrungTen));
+    }
+
+    if (!modelHopLe || loi.Count > 0)
+        return KetQuaDichVu.DuLieuKhongHopLe(loi);
+
+    var entity = await _db.LinhKiens.FindAsync(id);
+    if (entity == null)
+        return KetQuaDichVu.KhongTimThay();
+
+    // Kiểm tra linh kiện đã được sử dụng chưa
+    bool daSuDung = await _db.ChiTietSuaChuas
+        .AnyAsync(c => c.MaLinhKien == id);
+
+    // Không cho thay đổi tồn kho nếu đã phát sinh sử dụng
+    if (daSuDung && linhKien.SoLuongTon != entity.SoLuongTon)
+    {
+        loi.Add(new(
+            nameof(linhKien.SoLuongTon),
+            "Linh kiện đã được sử dụng. Không thể thay đổi tồn kho trực tiếp."
+        ));
+
+        return KetQuaDichVu.DuLieuKhongHopLe(loi);
+    }
+
+    entity.TenLinhKien = linhKien.TenLinhKien;
+    entity.DonViTinh = linhKien.DonViTinh;
+    entity.DonGia = linhKien.DonGia;
+    entity.MoTa = linhKien.MoTa;
+    entity.TrangThai = linhKien.TrangThai;
+
+    // Chỉ cập nhật tồn kho nếu linh kiện chưa từng được sử dụng
+    if (!daSuDung)
+        entity.SoLuongTon = linhKien.SoLuongTon;
+
+    try
+    {
+        await _db.SaveChangesAsync();
+    }
+    catch (DbUpdateException)
+    {
+        return KetQuaDichVu.DuLieuKhongHopLe(new[]
         {
-            var loi = new List<LoiTruongNhap>();
-            if (await _db.LinhKiens.AnyAsync(l => l.MaLinhKien != id && l.TenLinhKien == linhKien.TenLinhKien))
-                loi.Add(new(nameof(linhKien.TenLinhKien), LoiTrungTen));
+            new LoiTruongNhap(
+                string.Empty,
+                "Không thể lưu thay đổi. Hãy kiểm tra dữ liệu."
+            )
+        });
+    }
 
-            if (!modelHopLe || loi.Count > 0)
-                return KetQuaDichVu.DuLieuKhongHopLe(loi);
+    return KetQuaDichVu.Ok("Cập nhật linh kiện thành công.");
+}
 
-            // Lấy entity đang được theo dõi để tránh ghi đè
-            // các thuộc tính điều hướng do form gửi lên.
-            var entity = await _db.LinhKiens.FindAsync(id);
-            if (entity == null) return KetQuaDichVu.KhongTimThay();
-
-            entity.TenLinhKien = linhKien.TenLinhKien;
-            entity.DonViTinh = linhKien.DonViTinh;
-            entity.DonGia = linhKien.DonGia;
-            entity.SoLuongTon = linhKien.SoLuongTon;
-            entity.MoTa = linhKien.MoTa;
-            entity.TrangThai = linhKien.TrangThai;
-
-            try
-            {
-                await _db.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                return KetQuaDichVu.DuLieuKhongHopLe(new[]
-                {
-                    new LoiTruongNhap(string.Empty, "Không thể lưu thay đổi. Hãy kiểm tra dữ liệu.")
-                });
-            }
-
-            return KetQuaDichVu.Ok("Cập nhật linh kiện thành công.");
-        }
 
         public async Task<KetQuaDichVu> XoaAsync(int id)
         {

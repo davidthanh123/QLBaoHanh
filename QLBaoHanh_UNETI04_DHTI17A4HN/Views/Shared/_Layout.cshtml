@@ -1,46 +1,83 @@
+
 @{
     var tieuDe = ViewData["Title"] as string ?? "";
+
+    var thanhCong = TempData["ThanhCong"] as string
+                    ?? TempData["Success"] as string;
+
+    var loi = TempData["Loi"] as string
+              ?? TempData["Error"] as string;
 }
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>@(string.IsNullOrEmpty(tieuDe) ? "" : tieuDe + " - ")QLBaoHanh</title>
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />
+
     @await RenderSectionAsync("Styles", required: false)
 </head>
+
 <body>
     <div class="qb-app">
+
         <partial name="_Sidebar" />
+
         <div class="qb-backdrop" id="qbBackdrop"></div>
 
         <div class="qb-main">
+
             <header class="qb-topbar">
-                <button type="button" class="qb-toggle" id="qbToggle" aria-label="Mở menu"><i class="bi bi-list"></i></button>
+                <button type="button"
+                        class="qb-toggle"
+                        id="qbToggle"
+                        aria-label="Mở menu">
+                    <i class="bi bi-list"></i>
+                </button>
+
                 <h1>@tieuDe</h1>
             </header>
 
             <main class="qb-content" role="main">
-                @* Controller báo kết quả: TempData["ThanhCong"] = "Đã lưu"; hoặc TempData["Loi"] = "..."; *@
-                @if (TempData["ThanhCong"] is string thanhCong)
+
+                @* Thông báo thành công *@
+                @if (!string.IsNullOrEmpty(thanhCong))
                 {
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"></i>
                         @thanhCong
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="alert"
+                                aria-label="Đóng">
+                        </button>
                     </div>
                 }
-                @if (TempData["Loi"] is string loi)
+
+                @* Thông báo lỗi *@
+                @if (!string.IsNullOrEmpty(loi))
                 {
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
                         @loi
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="alert"
+                                aria-label="Đóng">
+                        </button>
                     </div>
                 }
+
                 @RenderBody()
+
             </main>
         </div>
     </div>
@@ -48,21 +85,32 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
     <script>
-        // Mobile: nút ☰ mở/đóng sidebar dạng drawer, bấm nền tối để đóng
+        // Mobile: mở/đóng Sidebar
         (function () {
             var sb = document.getElementById('qbSidebar');
             var bd = document.getElementById('qbBackdrop');
             var btn = document.getElementById('qbToggle');
+
             if (!sb || !bd || !btn) return;
+
             function toggle(open) {
                 sb.classList.toggle('is-open', open);
                 bd.classList.toggle('is-open', open);
             }
-            btn.addEventListener('click', function () { toggle(!sb.classList.contains('is-open')); });
-            bd.addEventListener('click', function () { toggle(false); });
+
+            btn.addEventListener('click', function () {
+                toggle(!sb.classList.contains('is-open'));
+            });
+
+            bd.addEventListener('click', function () {
+                toggle(false);
+            });
         })();
     </script>
+
     @await RenderSectionAsync("Scripts", required: false)
+
 </body>
 </html>

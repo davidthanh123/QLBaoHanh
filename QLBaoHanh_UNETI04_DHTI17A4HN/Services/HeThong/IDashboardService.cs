@@ -1,9 +1,18 @@
-// Họ và tên: [điền họ tên của bạn]
-// Mã sinh viên: [điền mã sinh viên của bạn]
-// Nội dung thực hiện: Thống kê tổng quan cho trang Dashboard (tách từ DashboardController).
 
 namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
 {
+    public record ThongKeTrangThaiPhieu(
+        string TrangThai,
+        int SoLuong);
+
+    public record ThongKeLoaiThietBi(
+        string TenLoai,
+        int SoLuong);
+
+    public record ThongKeKyThuatVien(
+        string HoTen,
+        int SoPhieu);
+
     public record ThongKeDashboard(
         int TongKhachHang,
         int TongThietBi,
@@ -11,7 +20,12 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
         int TongLinhKien,
         int TongKyThuatVien,
         int TongChiTietSuaChua,
-        decimal TongGiaTriSuaChua);
+        decimal TongGiaTriSuaChua,
+        List<ThongKeTrangThaiPhieu> TheoTrangThai,
+        List<ThongKeLoaiThietBi> TheoLoaiThietBi,
+        List<ThongKeKyThuatVien> TheoKyThuatVien,
+        decimal ThoiGianSuaChuaTrungBinh,
+        decimal TyLeSuaChuaBaoHanh);
 
     public interface IDashboardService
     {
