@@ -2,40 +2,62 @@
 // Mã sinh viên: [điền mã sinh viên của bạn]
 // Nội dung thực hiện: Nghiệp vụ chi tiết sửa chữa và tồn kho linh kiện (tách từ ChiTietSuaChuaController).
 
+using Microsoft.EntityFrameworkCore;
+using QLBaoHanh_UNETI04_DHTI17A4HN.Data;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models;
-using QLBaoHanh_UNETI04_DHTI17A4HN.Repositories;
 
 namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
 {
     public class ChiTietSuaChuaService : IChiTietSuaChuaService
     {
-        private readonly IUnitOfWork _uow;
+        private readonly AppDbContext _db;
 
-        public ChiTietSuaChuaService(IUnitOfWork uow) => _uow = uow;
+        public ChiTietSuaChuaService(AppDbContext db) => _db = db;
 
         // ===================== TRUY VẤN =====================
 
         public Task<List<ChiTietSuaChua>> LayDanhSachAsync() =>
-            _uow.ChiTietSuaChuas.LayDanhSachKemThongTinAsync();
+            _db.ChiTietSuaChuas.AsNoTracking()
+                .Include(c => c.KyThuatVien)
+                .Include(c => c.LinhKien)
+                .Include(c => c.PhieuSuaChua)
+                .ToListAsync();
 
         // Dùng chung cho trang Details và Delete (cùng tập Include).
         public Task<ChiTietSuaChua?> LayChiTietAsync(int id) =>
-            _uow.ChiTietSuaChuas.LayChiTietKemThongTinAsync(id);
+            _db.ChiTietSuaChuas.AsNoTracking()
+                .Include(c => c.PhieuSuaChua)
+                .Include(c => c.KyThuatVien)
+                .Include(c => c.LinhKien)
+                .FirstOrDefaultAsync(c => c.MaChiTiet == id);
 
         public Task<ChiTietSuaChua?> LayDeSuaAsync(int id) =>
-            _uow.ChiTietSuaChuas.GetByIdAsync(id);
+            _db.ChiTietSuaChuas.AsNoTracking().FirstOrDefaultAsync(c => c.MaChiTiet == id);
 
         public Task<List<PhieuSuaChua>> LayDsPhieuAsync() =>
-            _uow.PhieuSuaChuas.GetAllAsync();
+            _db.PhieuSuaChuas.AsNoTracking().ToListAsync();
 
         public Task<List<KyThuatVien>> LayDsKyThuatVienAsync() =>
-            _uow.KyThuatViens.GetAllAsync();
+            _db.KyThuatViens.AsNoTracking().ToListAsync();
 
-        public Task<List<LinhKien>> LayDsLinhKienAsync(LocLinhKien loc, int? maLinhKienDangChon = null) =>
-            _uow.LinhKiens.LayDanhSachTheoLocAsync(loc, maLinhKienDangChon);
+        public Task<List<LinhKien>> LayDsLinhKienAsync(LocLinhKien loc, int? maLinhKienDangChon = null)
+        {
+            var query = _db.LinhKiens.AsNoTracking().AsQueryable();
+            query = loc switch
+            {
+                LocLinhKien.DangHoatDong => query.Where(l => l.TrangThai),
+                LocLinhKien.DangHoatDongVaConHang => query.Where(l => l.TrangThai && l.SoLuongTon > 0),
+                LocLinhKien.DangHoatDongConHangHoacDangChon => query.Where(l =>
+                    l.TrangThai && (l.SoLuongTon > 0 || l.MaLinhKien == maLinhKienDangChon)),
+                _ => query
+            };
+            return query.ToListAsync();
+        }
 
         public Task<List<GiaLinhKien>> LayGiaLinhKienAsync() =>
-            _uow.LinhKiens.LayDanhSachGiaLinhKienAsync();
+            _db.LinhKiens.AsNoTracking()
+                .Select(l => new GiaLinhKien(l.MaLinhKien, l.DonGia))
+                .ToListAsync();
 
         // ===================== THÊM =====================
 
@@ -50,7 +72,8 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
             LinhKien? linhKien = null;
             if (model.MaLinhKien.HasValue)
             {
-                linhKien = await _uow.LinhKiens.GetByIdAsync(model.MaLinhKien.Value);
+                linhKien = await _db.LinhKiens
+                    .FirstOrDefaultAsync(l => l.MaLinhKien == model.MaLinhKien.Value);
 
                 if (linhKien == null)
                 {
@@ -79,8 +102,8 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
             if (linhKien != null)
                 linhKien.SoLuongTon -= model.SoLuong;
 
-            await _uow.ChiTietSuaChuas.AddAsync(model);
-            await _uow.SaveChangesAsync();
+            _db.ChiTietSuaChuas.Add(model);
+            await _db.SaveChangesAsync();
             return KetQuaDichVu.Ok("Thêm chi tiết sửa chữa thành công.");
         }
 
@@ -89,7 +112,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
         public async Task<KetQuaDichVu> CapNhatAsync(int id, ChiTietSuaChua model, bool modelHopLe)
         {
             // Lấy chi tiết cũ từ database
-            var chiTietCu = await _uow.ChiTietSuaChuas.GetByIdAsync(id);
+            var chiTietCu = await _db.ChiTietSuaChuas.FirstOrDefaultAsync(c => c.MaChiTiet == id);
             if (chiTietCu == null) return KetQuaDichVu.KhongTimThay();
 
             var loi = new List<LoiTruongNhap>();
@@ -101,7 +124,8 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
             LinhKien? linhKienMoi = null;
             if (model.MaLinhKien.HasValue)
             {
-                linhKienMoi = await _uow.LinhKiens.GetByIdAsync(model.MaLinhKien.Value);
+                linhKienMoi = await _db.LinhKiens
+                    .FirstOrDefaultAsync(l => l.MaLinhKien == model.MaLinhKien.Value);
 
                 if (linhKienMoi == null)
                 {
@@ -143,7 +167,8 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
             // Hoàn lại số lượng của linh kiện cũ
             if (chiTietCu.MaLinhKien.HasValue)
             {
-                var linhKienCu = await _uow.LinhKiens.GetByIdAsync(chiTietCu.MaLinhKien.Value);
+                var linhKienCu = await _db.LinhKiens
+                    .FirstOrDefaultAsync(l => l.MaLinhKien == chiTietCu.MaLinhKien.Value);
                 if (linhKienCu != null)
                     linhKienCu.SoLuongTon += chiTietCu.SoLuong;
             }
@@ -152,7 +177,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
             if (linhKienMoi != null)
                 linhKienMoi.SoLuongTon -= model.SoLuong;
 
-            // Cập nhật bản ghi đang được theo dõi
+            // Cập nhật bản ghi đang được EF Core theo dõi
             chiTietCu.MaPhieu = model.MaPhieu;
             chiTietCu.MaKyThuatVien = model.MaKyThuatVien;
             chiTietCu.MaLinhKien = model.MaLinhKien;
@@ -162,7 +187,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
             chiTietCu.KetQuaChanDoan = model.KetQuaChanDoan;
             chiTietCu.GhiChu = model.GhiChu;
 
-            await _uow.SaveChangesAsync();
+            await _db.SaveChangesAsync();
             return KetQuaDichVu.Ok("Cập nhật chi tiết sửa chữa thành công.");
         }
 
@@ -170,21 +195,22 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
 
         public async Task<KetQuaDichVu> XoaAsync(int id)
         {
-            var chiTiet = await _uow.ChiTietSuaChuas.GetByIdAsync(id);
+            var chiTiet = await _db.ChiTietSuaChuas.FirstOrDefaultAsync(c => c.MaChiTiet == id);
             if (chiTiet == null) return KetQuaDichVu.KhongTimThay();
 
             // Hoàn lại số lượng linh kiện vào kho
             if (chiTiet.MaLinhKien.HasValue)
             {
-                var linhKien = await _uow.LinhKiens.GetByIdAsync(chiTiet.MaLinhKien.Value);
+                var linhKien = await _db.LinhKiens
+                    .FirstOrDefaultAsync(l => l.MaLinhKien == chiTiet.MaLinhKien.Value);
                 if (linhKien != null)
                     linhKien.SoLuongTon += chiTiet.SoLuong;
             }
 
-            _uow.ChiTietSuaChuas.Remove(chiTiet);
+            _db.ChiTietSuaChuas.Remove(chiTiet);
 
             // Lưu cả thay đổi tồn kho và thao tác xóa
-            await _uow.SaveChangesAsync();
+            await _db.SaveChangesAsync();
             return KetQuaDichVu.Ok("Xóa chi tiết sửa chữa và hoàn lại linh kiện thành công.");
         }
     }
