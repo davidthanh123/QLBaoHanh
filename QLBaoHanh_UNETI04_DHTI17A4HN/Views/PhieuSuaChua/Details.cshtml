@@ -1,0 +1,203 @@
+@* Họ và tên: [điền họ tên của bạn] *@
+@* Mã sinh viên: [điền mã sinh viên của bạn] *@
+@* Nội dung thực hiện: Module 4 - chi tiết phiếu và cập nhật trạng thái xử lý. *@
+@model PhieuSuaChua
+@{
+    ViewData["Title"] = "Chi tiết phiếu sửa chữa";
+    var daDong = UiHelper.PhieuDaDong(Model.TrangThai);
+    var tongChiPhi = Model.ChiTietSuaChuas.Sum(c => c.ThanhTien);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="h4 mb-1">@UiHelper.Ma("PSC", Model.MaPhieu)</h2>
+        <div><partial name="_StatusBadge" model="UiHelper.Badge(Model.TrangThai)" /></div>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">Quay lại danh sách</a>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <section class="card card-body mb-3">
+            <h3 class="h6">Thông tin tiếp nhận</h3>
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Khách hàng</dt><dd class="col-sm-8">@Model.KhachHang?.HoTen (@Model.KhachHang?.SoDienThoai)</dd>
+                <dt class="col-sm-4">Thiết bị</dt><dd class="col-sm-8">@Model.ThietBi?.TenThietBi · @Model.ThietBi?.SerialNumber</dd>
+                <dt class="col-sm-4">Loại thiết bị</dt><dd class="col-sm-8">@Model.ThietBi?.LoaiThietBi?.TenLoai</dd>
+                <dt class="col-sm-4">Bảo hành tại ngày tiếp nhận</dt>
+                <dd class="col-sm-8">@(ViewBag.ConBaoHanh == true ? "Còn bảo hành" : "Hết bảo hành") — hạn @UiHelper.Ngay(Model.ThietBi?.HanBaoHanh)</dd>
+                <dt class="col-sm-4">Mức độ</dt><dd class="col-sm-8"><partial name="_StatusBadge" model="UiHelper.Badge(Model.MucDo)" /></dd>
+                <dt class="col-sm-4">Ngày tiếp nhận</dt><dd class="col-sm-8">@UiHelper.NgayGio(Model.NgayTiepNhan)</dd>
+                <dt class="col-sm-4">Hạn dự kiến</dt><dd class="col-sm-8">@UiHelper.Ngay(Model.HanDuKien)</dd>
+                <dt class="col-sm-4">Nhân viên tiếp nhận</dt><dd class="col-sm-8">@(Model.TaiKhoanTiepNhan?.HoTen ?? "Chưa tiếp nhận")</dd>
+                <dt class="col-sm-4">Mô tả lỗi</dt><dd class="col-sm-8" style="white-space: pre-line">@Model.NoiDungLoi</dd>
+                @if (!string.IsNullOrWhiteSpace(Model.LyDoHuyTuChoi))
+                {
+                    <dt class="col-sm-4">Lý do hủy/từ chối</dt><dd class="col-sm-8">@Model.LyDoHuyTuChoi</dd>
+                }
+                @if (Model.NgayHoanThanh.HasValue)
+                {
+                    <dt class="col-sm-4">Ngày hoàn thành</dt><dd class="col-sm-8">@UiHelper.NgayGio(Model.NgayHoanThanh)</dd>
+                }
+            </dl>
+        </section>
+
+        <section class="card card-body mb-3">
+            <div class="d-flex justify-content-between">
+                <h3 class="h6">Chẩn đoán và chi tiết sửa chữa</h3>
+                <strong>@UiHelper.Tien(tongChiPhi)</strong>
+            </div>
+            @if (Model.ChiTietSuaChuas.Count == 0)
+            {
+                <p class="text-muted mb-0">Chưa có chi tiết sửa chữa. Module 5 phụ trách nhập kết quả, kỹ thuật viên và linh kiện.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead><tr><th>Kỹ thuật viên</th><th>Chẩn đoán/kết quả</th><th>Linh kiện</th><th class="text-end">Thành tiền</th></tr></thead>
+                        <tbody>
+                        @foreach (var ct in Model.ChiTietSuaChuas)
+                        {
+                            <tr>
+                                <td>@ct.KyThuatVien?.HoTen</td>
+                                <td>@(ct.KetQuaChanDoan ?? "—")</td>
+                                <td>@(ct.LinhKien?.TenLinhKien ?? "Công sửa chữa") × @ct.SoLuong</td>
+                                <td class="text-end">@UiHelper.Tien(ct.ThanhTien)</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+
+        @if (Model.TrangThai == TrangThaiPhieuEnum.DangXuLy)
+        {
+            var kyThuatViens = ViewBag.KyThuatViens as IEnumerable<KyThuatVien> ?? Enumerable.Empty<KyThuatVien>();
+            var linhKiens = ViewBag.LinhKiens as IEnumerable<LinhKien> ?? Enumerable.Empty<LinhKien>();
+            <section class="card card-body mb-3">
+                <h3 class="h6">Ghi nhận chẩn đoán, công sửa chữa hoặc linh kiện</h3>
+                @if (!kyThuatViens.Any())
+                {
+                    <p class="text-warning mb-0">Chưa có kỹ thuật viên hoạt động. Admin cần tạo hồ sơ kỹ thuật viên trước.</p>
+                }
+                else
+                {
+                    <form asp-action="ThemChiTietSuaChua" asp-route-id="@Model.MaPhieu" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-2">
+                            <label class="form-label" for="MaKyThuatVien">Kỹ thuật viên</label>
+                            <select class="form-select" id="MaKyThuatVien" name="MaKyThuatVien" required>
+                                <option value="">Chọn kỹ thuật viên</option>
+                                @foreach (var ktv in kyThuatViens)
+                                {
+                                    <option value="@ktv.MaKyThuatVien">@ktv.HoTen — @ktv.ChuyenMon</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label" for="KetQuaChanDoan">Chẩn đoán / nội dung đã sửa</label>
+                            <textarea class="form-control" id="KetQuaChanDoan" name="KetQuaChanDoan" rows="3" maxlength="1000" required></textarea>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label" for="MaLinhKien">Linh kiện (không bắt buộc)</label>
+                                <select class="form-select" id="MaLinhKien" name="MaLinhKien">
+                                    <option value="">Không dùng linh kiện — nhập chi phí công</option>
+                                    @foreach (var lk in linhKiens)
+                                    {
+                                        <option value="@lk.MaLinhKien">@lk.TenLinhKien · tồn @lk.SoLuongTon · @UiHelper.Tien(lk.DonGia)</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label" for="SoLuong">Số lượng linh kiện</label>
+                                <input class="form-control" id="SoLuong" name="SoLuong" type="number" min="1" value="1" />
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label" for="DonGiaCong">Chi phí công (₫)</label>
+                                <input class="form-control" id="DonGiaCong" name="DonGiaCong" type="number" min="0" step="1000" value="0" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="GhiChu">Ghi chú</label>
+                            <textarea class="form-control" id="GhiChu" name="GhiChu" rows="2" maxlength="500"></textarea>
+                        </div>
+                        <p class="form-text">Nếu chọn linh kiện, hệ thống lấy đơn giá và trừ kho từ dữ liệu tồn kho. Nếu không chọn, số lượng tính là một lần công và dùng chi phí công bạn nhập.</p>
+                        <button class="btn btn-outline-primary" type="submit">Lưu chẩn đoán / chi phí</button>
+                    </form>
+                }
+            </section>
+        }
+
+        @if (!daDong)
+        {
+            <section class="card card-body">
+                <h3 class="h6">Cập nhật trạng thái</h3>
+                <form asp-action="CapNhatTrangThai" asp-route-id="@Model.MaPhieu" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-2">
+                        <label class="form-label" for="trangThaiMoi">Chuyển sang</label>
+                        <select class="form-select" id="trangThaiMoi" name="trangThaiMoi" required>
+                            <option value="">Chọn trạng thái hợp lệ</option>
+                            @if (Model.TrangThai == TrangThaiPhieuEnum.ChoXuLy)
+                            {
+                                <option value="DangXuLy">Đang xử lý — tiếp nhận sửa chữa</option>
+                                <option value="TuChoi">Từ chối phiếu</option>
+                                <option value="Huy">Hủy phiếu</option>
+                            }
+                            else if (Model.TrangThai == TrangThaiPhieuEnum.DangXuLy)
+                            {
+                                <option value="HoanThanh">Hoàn thành</option>
+                                <option value="Huy">Hủy phiếu</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="ghiChu">Ghi chú / lý do</label>
+                        <textarea class="form-control" id="ghiChu" name="ghiChu" rows="2" maxlength="500" placeholder="Bắt buộc khi hủy hoặc từ chối"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Lưu chuyển trạng thái</button>
+                    @if (Model.TrangThai == TrangThaiPhieuEnum.DangXuLy && Model.ChiTietSuaChuas.Count == 0)
+                    {
+                        <small class="text-muted ms-2">Cần có ít nhất một chi tiết sửa chữa trước khi hoàn thành.</small>
+                    }
+                </form>
+            </section>
+        }
+    </div>
+
+    <div class="col-lg-5">
+        <section class="card card-body">
+            <h3 class="h6">Lịch sử xử lý</h3>
+            @if (Model.LichSus.Count == 0)
+            {
+                <p class="text-muted mb-0">Chưa có lịch sử trạng thái.</p>
+            }
+            else
+            {
+                <ol class="list-group list-group-numbered list-group-flush">
+                @foreach (var log in Model.LichSus.OrderByDescending(l => l.ThoiGian))
+                {
+                    <li class="list-group-item px-0">
+                        <div class="d-flex justify-content-between gap-2">
+                            <span>
+                                @(log.TrangThaiCu.HasValue ? UiHelper.Badge(log.TrangThaiCu.Value).Text : "Tạo phiếu")
+                                <i class="bi bi-arrow-right mx-1"></i>
+                                <strong>@UiHelper.Badge(log.TrangThaiMoi).Text</strong>
+                            </span>
+                            <small class="text-muted text-nowrap">@UiHelper.NgayGio(log.ThoiGian)</small>
+                        </div>
+                        <small class="text-muted">@log.TaiKhoanThucHien?.HoTen</small>
+                        @if (!string.IsNullOrWhiteSpace(log.GhiChu))
+                        {
+                            <div>@log.GhiChu</div>
+                        }
+                    </li>
+                }
+                </ol>
+            }
+        </section>
+    </div>
+</div>

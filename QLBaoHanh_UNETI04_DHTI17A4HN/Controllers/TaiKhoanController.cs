@@ -1,14 +1,12 @@
-﻿// Họ và tên: Vân
+// Họ và tên: Vân
 // Mã sinh viên: 23103100203
 // Nội dung thực hiện: Module 1 - Đăng nhập/Đăng xuất (Session), CRUD Tài khoản (danh sách, thêm, sửa, khóa/mở khóa, xóa an toàn).
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using QLBaoHanh_UNETI04_DHTI17A4HN.Data;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Helpers;
-using QLBaoHanh_UNETI04_DHTI17A4HN.Models;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models.Enums;
+using QLBaoHanh_UNETI04_DHTI17A4HN.Services;
 using QLBaoHanh_UNETI04_DHTI17A4HN.ViewModels;
 
 namespace QLBaoHanh_UNETI04_DHTI17A4HN.Controllers
@@ -17,15 +15,13 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Controllers
     [PhanQuyen(VaiTroEnum.Admin)]
     public class TaiKhoanController : Controller
     {
-        // Sai liên tiếp 5 lần thì khóa tạm 15 phút (SoLanDangNhapSai + KhoaDenNgay, THIETKE.md mục 2.9)
-        private const int SoLanSaiToiDa = 5;
-        private static readonly TimeSpan ThoiGianKhoaTam = TimeSpan.FromMinutes(15);
+        private readonly IDangNhapService _dangNhapService;
+        private readonly ITaiKhoanService _taiKhoanService;
 
-        private readonly AppDbContext _db;
-
-        public TaiKhoanController(AppDbContext db)
+        public TaiKhoanController(IDangNhapService dangNhapService, ITaiKhoanService taiKhoanService)
         {
-            _db = db;
+            _dangNhapService = dangNhapService;
+            _taiKhoanService = taiKhoanService;
         }
 
         // =====================================================================
@@ -50,73 +46,19 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var tenNhap = model.TenDangNhap.Trim();
-            var bayGio = DateTime.Now;
             var diaChiIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+            var ketQua = await _dangNhapService.DangNhapAsync(model, diaChiIp);
 
-            var taiKhoan = await _db.TaiKhoans.FirstOrDefaultAsync(t => t.TenDangNhap == tenNhap);
-
-            // 1. Không tồn tại: báo chung chung để không lộ tên đăng nhập nào có thật
-            if (taiKhoan == null)
+            if (!ketQua.ThanhCong)
             {
-                GhiNhatKy(null, tenNhap, KetQuaDangNhapEnum.KhongTonTai, bayGio, diaChiIp);
-                await _db.SaveChangesAsync();
-                ModelState.AddModelError(string.Empty, "Tên đăng nhập hoặc mật khẩu không đúng.");
+                ModelState.AddModelError(string.Empty, ketQua.ThongBao!);
                 return View(model);
             }
-
-            // 2. Bị Admin khóa vĩnh viễn
-            if (!taiKhoan.TrangThai)
-            {
-                GhiNhatKy(taiKhoan.MaTaiKhoan, tenNhap, KetQuaDangNhapEnum.BiKhoa, bayGio, diaChiIp);
-                await _db.SaveChangesAsync();
-                ModelState.AddModelError(string.Empty, "Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.");
-                return View(model);
-            }
-
-            // 3. Đang bị khóa tạm do nhập sai nhiều lần
-            if (taiKhoan.KhoaDenNgay.HasValue && taiKhoan.KhoaDenNgay.Value > bayGio)
-            {
-                GhiNhatKy(taiKhoan.MaTaiKhoan, tenNhap, KetQuaDangNhapEnum.BiKhoa, bayGio, diaChiIp);
-                await _db.SaveChangesAsync();
-                ModelState.AddModelError(string.Empty,
-                    $"Tài khoản tạm khóa do nhập sai nhiều lần. Thử lại sau {taiKhoan.KhoaDenNgay.Value:HH:mm dd/MM/yyyy}.");
-                return View(model);
-            }
-
-            // 4. Sai mật khẩu
-            if (!MatKhauHelper.KiemTra(taiKhoan, model.MatKhau, out var canBamLai))
-            {
-                taiKhoan.SoLanDangNhapSai++;
-                string thongBao;
-                if (taiKhoan.SoLanDangNhapSai >= SoLanSaiToiDa)
-                {
-                    taiKhoan.KhoaDenNgay = bayGio.Add(ThoiGianKhoaTam);
-                    taiKhoan.SoLanDangNhapSai = 0;
-                    thongBao = $"Bạn đã nhập sai {SoLanSaiToiDa} lần. Tài khoản tạm khóa {ThoiGianKhoaTam.TotalMinutes:0} phút.";
-                }
-                else
-                {
-                    thongBao = $"Tên đăng nhập hoặc mật khẩu không đúng. Còn {SoLanSaiToiDa - taiKhoan.SoLanDangNhapSai} lần thử.";
-                }
-                GhiNhatKy(taiKhoan.MaTaiKhoan, tenNhap, KetQuaDangNhapEnum.SaiMatKhau, bayGio, diaChiIp);
-                await _db.SaveChangesAsync();
-                ModelState.AddModelError(string.Empty, thongBao);
-                return View(model);
-            }
-
-            // 5. Thành công
-            taiKhoan.SoLanDangNhapSai = 0;
-            taiKhoan.KhoaDenNgay = null;
-            taiKhoan.LanDangNhapCuoi = bayGio;
-            if (canBamLai)
-                taiKhoan.MatKhau = MatKhauHelper.Bam(taiKhoan, model.MatKhau);
-            GhiNhatKy(taiKhoan.MaTaiKhoan, tenNhap, KetQuaDangNhapEnum.ThanhCong, bayGio, diaChiIp);
-            await _db.SaveChangesAsync();
 
             // Xóa Session cũ rồi ghi mới để tránh dùng lại phiên của người trước
+            var tt = ketQua.DuLieu!;
             HttpContext.Session.Clear();
-            HttpContext.Session.GhiDangNhap(taiKhoan.MaTaiKhoan, taiKhoan.HoTen, taiKhoan.VaiTro);
+            HttpContext.Session.GhiDangNhap(tt.MaTaiKhoan, tt.HoTen, tt.VaiTro);
 
             if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
                 return LocalRedirect(model.ReturnUrl);
@@ -147,110 +89,50 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Controllers
 
         public async Task<IActionResult> Index(string? tuKhoa, VaiTroEnum? vaiTro, bool? trangThai)
         {
-            var query = _db.TaiKhoans.AsNoTracking().AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(tuKhoa))
-            {
-                var k = tuKhoa.Trim();
-                query = query.Where(t => t.TenDangNhap.Contains(k) || t.HoTen.Contains(k) || t.Email.Contains(k));
-            }
-            if (vaiTro.HasValue)
-                query = query.Where(t => t.VaiTro == vaiTro.Value);
-            if (trangThai.HasValue)
-                query = query.Where(t => t.TrangThai == trangThai.Value);
-
             ViewBag.TuKhoa = tuKhoa;
             ViewBag.VaiTro = vaiTro;
             ViewBag.TrangThai = trangThai;
             ViewBag.MaDangNhap = HttpContext.Session.LayMaTaiKhoan();
 
-            var danhSach = await query.OrderBy(t => t.TenDangNhap).ToListAsync();
-            return View(danhSach);
+            return View(await _taiKhoanService.TimKiemAsync(tuKhoa, vaiTro, trangThai));
         }
 
         public async Task<IActionResult> Details(int id)
         {
-            var taiKhoan = await _db.TaiKhoans.AsNoTracking()
-                .Include(t => t.KhachHang)
-                .Include(t => t.KyThuatVien)
-                .FirstOrDefaultAsync(t => t.MaTaiKhoan == id);
-            if (taiKhoan == null) return NotFound();
+            var chiTiet = await _taiKhoanService.LayChiTietAsync(id);
+            if (chiTiet == null) return NotFound();
 
-            ViewBag.NhatKy = await _db.NhatKyDangNhaps.AsNoTracking()
-                .Where(n => n.MaTaiKhoan == id)
-                .OrderByDescending(n => n.ThoiGian)
-                .Take(10)
-                .ToListAsync();
+            ViewBag.NhatKy = chiTiet.NhatKy;
             ViewBag.MaDangNhap = HttpContext.Session.LayMaTaiKhoan();
-            return View(taiKhoan);
+            return View(chiTiet.TaiKhoan);
         }
 
         [HttpGet]
-        public IActionResult Create()
-        {
-            return View(new TaiKhoanFormViewModel());
-        }
+        public IActionResult Create() => View(new TaiKhoanFormViewModel());
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(TaiKhoanFormViewModel model)
         {
-            model.TenDangNhap = (model.TenDangNhap ?? string.Empty).Trim();
-            model.HoTen = (model.HoTen ?? string.Empty).Trim();
-            model.Email = (model.Email ?? string.Empty).Trim();
-
-            if (string.IsNullOrWhiteSpace(model.MatKhau))
-                ModelState.AddModelError(nameof(model.MatKhau), "Mật khẩu không được để trống");
-
-            if (ModelState.IsValid && await _db.TaiKhoans.AnyAsync(t => t.TenDangNhap == model.TenDangNhap))
-                ModelState.AddModelError(nameof(model.TenDangNhap), "Tên đăng nhập đã tồn tại");
-
-            if (!ModelState.IsValid)
-                return View(model);
-
-            var taiKhoan = new TaiKhoan
+            var ketQua = await _taiKhoanService.ThemAsync(model, ModelState.IsValid);
+            if (!ketQua.ThanhCong)
             {
-                TenDangNhap = model.TenDangNhap,
-                HoTen = model.HoTen,
-                Email = model.Email,
-                VaiTro = model.VaiTro,
-                TrangThai = model.TrangThai,
-                NgayTaoTaiKhoan = DateTime.Now,
-            };
-            taiKhoan.MatKhau = MatKhauHelper.Bam(taiKhoan, model.MatKhau!);
-
-            _db.TaiKhoans.Add(taiKhoan);
-            try
-            {
-                await _db.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                // Hai Admin cùng tạo một tên đăng nhập: unique index chặn lại
-                ModelState.AddModelError(nameof(model.TenDangNhap), "Tên đăng nhập đã tồn tại");
+                ketQua.GopLoiVaoModelState(ModelState);
                 return View(model);
             }
 
-            TempData["ThanhCong"] = $"Đã thêm tài khoản {taiKhoan.TenDangNhap}.";
+            this.DatThongBao(ketQua);
             return RedirectToAction(nameof(Index));
         }
 
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            var taiKhoan = await _db.TaiKhoans.AsNoTracking().FirstOrDefaultAsync(t => t.MaTaiKhoan == id);
-            if (taiKhoan == null) return NotFound();
+            var model = await _taiKhoanService.LayDeSuaAsync(id);
+            if (model == null) return NotFound();
 
-            ViewBag.LaChinhMinh = taiKhoan.MaTaiKhoan == HttpContext.Session.LayMaTaiKhoan();
-            return View(new TaiKhoanFormViewModel
-            {
-                MaTaiKhoan = taiKhoan.MaTaiKhoan,
-                TenDangNhap = taiKhoan.TenDangNhap,
-                HoTen = taiKhoan.HoTen,
-                Email = taiKhoan.Email,
-                VaiTro = taiKhoan.VaiTro,
-                TrangThai = taiKhoan.TrangThai,
-            });
+            ViewBag.LaChinhMinh = model.MaTaiKhoan == HttpContext.Session.LayMaTaiKhoan();
+            return View(model);
         }
 
         [HttpPost]
@@ -259,51 +141,21 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Controllers
         {
             if (id != model.MaTaiKhoan) return BadRequest();
 
-            var taiKhoan = await _db.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == id);
-            if (taiKhoan == null) return NotFound();
+            var maDangNhap = HttpContext.Session.LayMaTaiKhoan();
+            ViewBag.LaChinhMinh = id == maDangNhap;
 
-            var laChinhMinh = taiKhoan.MaTaiKhoan == HttpContext.Session.LayMaTaiKhoan();
-            ViewBag.LaChinhMinh = laChinhMinh;
-
-            // Tên đăng nhập không đổi khi sửa: bỏ qua giá trị gửi lên
-            model.TenDangNhap = taiKhoan.TenDangNhap;
+            // Tên đăng nhập không đổi khi sửa: bỏ qua lỗi validate của ô này (Service ghi đè giá trị từ DB).
             ModelState.Remove(nameof(model.TenDangNhap));
-            model.HoTen = (model.HoTen ?? string.Empty).Trim();
-            model.Email = (model.Email ?? string.Empty).Trim();
 
-            if (ModelState.IsValid)
+            var ketQua = await _taiKhoanService.CapNhatAsync(id, model, maDangNhap, ModelState.IsValid);
+            if (ketQua.Loai == LoaiKetQua.KhongTimThay) return NotFound();
+            if (ketQua.Loai == LoaiKetQua.DuLieuKhongHopLe)
             {
-                var doiVaiTroHoacKhoa = model.VaiTro != taiKhoan.VaiTro || model.TrangThai != taiKhoan.TrangThai;
-                if (laChinhMinh && doiVaiTroHoacKhoa)
-                {
-                    ModelState.AddModelError(string.Empty, "Không thể tự đổi vai trò hoặc tự khóa tài khoản đang đăng nhập.");
-                }
-                else if (taiKhoan.VaiTro == VaiTroEnum.Admin && taiKhoan.TrangThai
-                         && (model.VaiTro != VaiTroEnum.Admin || !model.TrangThai)
-                         && await LaAdminHoatDongCuoiCungAsync(id))
-                {
-                    ModelState.AddModelError(string.Empty, "Phải còn ít nhất một quản trị viên đang hoạt động.");
-                }
-            }
-
-            if (!ModelState.IsValid)
+                ketQua.GopLoiVaoModelState(ModelState);
                 return View(model);
-
-            taiKhoan.HoTen = model.HoTen;
-            taiKhoan.Email = model.Email;
-            taiKhoan.VaiTro = model.VaiTro;
-            if (model.TrangThai && !taiKhoan.TrangThai)
-            {
-                // Mở khóa: xóa luôn dấu vết khóa tạm
-                taiKhoan.SoLanDangNhapSai = 0;
-                taiKhoan.KhoaDenNgay = null;
             }
-            taiKhoan.TrangThai = model.TrangThai;
-            if (!string.IsNullOrWhiteSpace(model.MatKhau))
-                taiKhoan.MatKhau = MatKhauHelper.Bam(taiKhoan, model.MatKhau);
 
-            await _db.SaveChangesAsync();
-            TempData["ThanhCong"] = $"Đã cập nhật tài khoản {taiKhoan.TenDangNhap}.";
+            this.DatThongBao(ketQua);
             return RedirectToAction(nameof(Index));
         }
 
@@ -312,34 +164,10 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DoiTrangThai(int id)
         {
-            var taiKhoan = await _db.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == id);
-            if (taiKhoan == null) return NotFound();
+            var ketQua = await _taiKhoanService.DoiTrangThaiAsync(id, HttpContext.Session.LayMaTaiKhoan());
+            if (ketQua.Loai == LoaiKetQua.KhongTimThay) return NotFound();
 
-            if (taiKhoan.MaTaiKhoan == HttpContext.Session.LayMaTaiKhoan())
-            {
-                TempData["Loi"] = "Không thể tự khóa tài khoản đang đăng nhập.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            if (taiKhoan.TrangThai)
-            {
-                if (taiKhoan.VaiTro == VaiTroEnum.Admin && await LaAdminHoatDongCuoiCungAsync(id))
-                {
-                    TempData["Loi"] = "Phải còn ít nhất một quản trị viên đang hoạt động.";
-                    return RedirectToAction(nameof(Index));
-                }
-                taiKhoan.TrangThai = false;
-                TempData["ThanhCong"] = $"Đã khóa tài khoản {taiKhoan.TenDangNhap}.";
-            }
-            else
-            {
-                taiKhoan.TrangThai = true;
-                taiKhoan.SoLanDangNhapSai = 0;
-                taiKhoan.KhoaDenNgay = null;
-                TempData["ThanhCong"] = $"Đã mở khóa tài khoản {taiKhoan.TenDangNhap}.";
-            }
-
-            await _db.SaveChangesAsync();
+            this.DatThongBao(ketQua);
             return RedirectToAction(nameof(Index));
         }
 
@@ -348,66 +176,11 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Xoa(int id)
         {
-            var taiKhoan = await _db.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == id);
-            if (taiKhoan == null) return NotFound();
+            var ketQua = await _taiKhoanService.XoaAsync(id, HttpContext.Session.LayMaTaiKhoan());
+            if (ketQua.Loai == LoaiKetQua.KhongTimThay) return NotFound();
 
-            if (taiKhoan.MaTaiKhoan == HttpContext.Session.LayMaTaiKhoan())
-            {
-                TempData["Loi"] = "Không thể xóa tài khoản đang đăng nhập.";
-                return RedirectToAction(nameof(Index));
-            }
-            if (taiKhoan.VaiTro == VaiTroEnum.Admin && taiKhoan.TrangThai && await LaAdminHoatDongCuoiCungAsync(id))
-            {
-                TempData["Loi"] = "Phải còn ít nhất một quản trị viên đang hoạt động.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            var coDuLieuLienQuan =
-                await _db.KhachHangs.AnyAsync(k => k.MaTaiKhoan == id)
-                || await _db.KyThuatViens.AnyAsync(k => k.MaTaiKhoan == id)
-                || await _db.PhieuSuaChuas.AnyAsync(p => p.MaTaiKhoanTiepNhan == id)
-                || await _db.LichSuTrangThaiPhieus.AnyAsync(l => l.MaTaiKhoanThucHien == id)
-                || await _db.TepDinhKems.AnyAsync(t => t.MaTaiKhoanUpload == id)
-                || await _db.ThongBaos.AnyAsync(t => t.MaTaiKhoanNhan == id)
-                || await _db.NhatKyDangNhaps.AnyAsync(n => n.MaTaiKhoan == id);
-
-            if (coDuLieuLienQuan)
-            {
-                TempData["Loi"] = $"Không thể xóa tài khoản {taiKhoan.TenDangNhap}: đã có dữ liệu liên quan (hồ sơ, phiếu hoặc nhật ký đăng nhập). Hãy dùng chức năng Khóa tài khoản.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            _db.TaiKhoans.Remove(taiKhoan);
-            try
-            {
-                await _db.SaveChangesAsync();
-                TempData["ThanhCong"] = $"Đã xóa tài khoản {taiKhoan.TenDangNhap}.";
-            }
-            catch (DbUpdateException)
-            {
-                TempData["Loi"] = "Không thể xóa tài khoản này vì đã có dữ liệu liên quan. Hãy dùng chức năng Khóa tài khoản.";
-            }
+            this.DatThongBao(ketQua);
             return RedirectToAction(nameof(Index));
-        }
-
-        // =====================================================================
-        // HÀM PHỤ
-        // =====================================================================
-
-        // true nếu ngoài tài khoản `id` không còn Admin nào đang hoạt động
-        private async Task<bool> LaAdminHoatDongCuoiCungAsync(int id) =>
-            !await _db.TaiKhoans.AnyAsync(t => t.MaTaiKhoan != id && t.VaiTro == VaiTroEnum.Admin && t.TrangThai);
-
-        private void GhiNhatKy(int? maTaiKhoan, string tenNhap, KetQuaDangNhapEnum ketQua, DateTime thoiGian, string? diaChiIp)
-        {
-            _db.NhatKyDangNhaps.Add(new NhatKyDangNhap
-            {
-                MaTaiKhoan = maTaiKhoan,
-                TenDangNhapNhap = tenNhap.Length > 50 ? tenNhap[..50] : tenNhap,
-                ThoiGian = thoiGian,
-                KetQua = ketQua,
-                DiaChiIP = diaChiIp,
-            });
         }
     }
 }
