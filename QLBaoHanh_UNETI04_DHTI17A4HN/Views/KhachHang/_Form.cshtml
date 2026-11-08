@@ -1,0 +1,74 @@
+@*
+   Họ và tên: David Thành
+   Mã sinh viên: 23103100239
+   Nội dung thực hiện: Module 3 - Form dùng chung cho Thêm và Sửa khách hàng (Admin/Nhân viên).
+*@
+@model KhachHangFormViewModel
+@{
+    var laSua = Model.MaKhachHang > 0;
+}
+
+<form method="post" action="@(laSua ? Url.Action("Edit", new { id = Model.MaKhachHang }) : Url.Action("Create"))">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="MaKhachHang" />
+    <div asp-validation-summary="ModelOnly"></div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="HoTen" class="form-label required"></label>
+                    <input asp-for="HoTen" class="form-control" maxlength="100" />
+                    <span asp-validation-for="HoTen" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="SoDienThoai" class="form-label required"></label>
+                    <input asp-for="SoDienThoai" type="tel" class="form-control" maxlength="15" />
+                    <span asp-validation-for="SoDienThoai" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" type="email" class="form-control" maxlength="150" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="CCCD" class="form-label"></label>
+                    <input asp-for="CCCD" class="form-control mono" maxlength="12" />
+                    <span asp-validation-for="CCCD" class="text-danger small"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="DiaChi" class="form-label"></label>
+                    <input asp-for="DiaChi" class="form-control" maxlength="250" />
+                    <span asp-validation-for="DiaChi" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="LoaiKhachHang" class="form-label"></label>
+                    <select asp-for="LoaiKhachHang" asp-items="Html.GetEnumSelectList<LoaiKhachHangEnum>()" class="form-select"></select>
+                    <span asp-validation-for="LoaiKhachHang" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="MaSoThue" class="form-label"></label>
+                    <input asp-for="MaSoThue" class="form-control mono" maxlength="14" placeholder="Chỉ dùng cho khách hàng doanh nghiệp" />
+                    <span asp-validation-for="MaSoThue" class="text-danger small"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="MaTaiKhoan" class="form-label"></label>
+                    <select asp-for="MaTaiKhoan" asp-items="Model.TaiKhoanKhaDung" class="form-select">
+                        <option value="">-- Chưa liên kết tài khoản --</option>
+                    </select>
+                    <div class="form-text">Chỉ hiện tài khoản vai trò Khách hàng đang hoạt động và chưa gắn với hồ sơ nào. Khách do nhân viên nhập tay có thể để trống.</div>
+                    <span asp-validation-for="MaTaiKhoan" class="text-danger small"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="GhiChu" class="form-label"></label>
+                    <textarea asp-for="GhiChu" class="form-control" rows="3" maxlength="500"></textarea>
+                    <span asp-validation-for="GhiChu" class="text-danger small"></span>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer d-flex justify-content-end gap-2">
+            <a class="btn btn-outline-secondary" asp-action="Index">Hủy</a>
+            <button type="submit" class="btn btn-primary">@(laSua ? "Lưu thay đổi" : "Thêm khách hàng")</button>
+        </div>
+    </div>
+</form>

@@ -1,5 +1,9 @@
-// Họ và tên: [điền họ tên của bạn]
-// Mã sinh viên: [điền mã sinh viên của bạn]
+// Họ và tên: David Thành
+// Mã sinh viên: 23103100239
+// Nội dung thực hiện: Module 3 - tạo phiếu (kiểm tra điều kiện, chống trùng), hủy phiếu, theo dõi phiếu của khách hàng, ghi lịch sử trạng thái khi tạo/hủy.
+//
+// Họ và tên: [người phụ trách Module 4 điền]
+// Mã sinh viên: [người phụ trách Module 4 điền]
 // Nội dung thực hiện: Module 4 - nghiệp vụ tiếp nhận, xử lý và quản lý trạng thái phiếu sửa chữa (tách từ PhieuSuaChuaController).
 
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -231,7 +235,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
             }).ToList();
         }
 
-        public async Task<KetQuaDichVu> TaoPhieuAsync(int maKhachHang, TaoPhieuSuaChuaViewModel model, bool modelHopLe)
+        public async Task<KetQuaDichVu> TaoPhieuAsync(int maKhachHang, int maTaiKhoan, TaoPhieuSuaChuaViewModel model, bool modelHopLe)
         {
             var loi = new List<LoiTruongNhap>();
 
@@ -261,12 +265,34 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
                 NoiDungLoi = model.NoiDungLoi.Trim(),
                 MucDo = model.MucDo,
                 HanDuKien = model.HanDuKien?.Date,
-                TrangThai = TrangThaiPhieuEnum.ChoXuLy
+                TrangThai = TrangThaiPhieuEnum.ChoXuLy,
+                // Mỗi lần đổi trạng thái (kể cả lúc tạo mới) ghi 1 dòng lịch sử - THIETKE.md mục 2.4
+                LichSus = new List<LichSuTrangThaiPhieu>
+                {
+                    new()
+                    {
+                        MaTaiKhoanThucHien = maTaiKhoan,
+                        TrangThaiCu = null,
+                        TrangThaiMoi = TrangThaiPhieuEnum.ChoXuLy,
+                        ThoiGian = DateTime.Now,
+                        GhiChu = "Tạo phiếu sửa chữa"
+                    }
+                }
             };
 
             await _uow.PhieuSuaChuas.AddAsync(phieu);
             await _uow.SaveChangesAsync();
             return KetQuaDichVu.Ok($"Đã tạo phiếu {UiHelper.Ma("PSC", phieu.MaPhieu)}. Phiếu đang chờ tiếp nhận.");
+        }
+
+        public async Task<PhieuSuaChua?> LayChiTietCuaToiAsync(int maPhieu, int? maTaiKhoan)
+        {
+            var maKhachHang = await LayMaKhachHangHienTaiAsync(maTaiKhoan);
+            if (maKhachHang == null) return null;
+
+            var phieu = await _uow.PhieuSuaChuas.LayChiTietKemTatCaThongTinAsync(maPhieu);
+            // Phiếu của người khác được coi như không tồn tại.
+            return phieu != null && phieu.MaKhachHang == maKhachHang.Value ? phieu : null;
         }
 
         public async Task<KetQuaDichVu> KiemTraCoTheHuyAsync(int maPhieu, int? maTaiKhoan, VaiTroEnum? vaiTro)
@@ -282,6 +308,8 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
         public async Task<KetQuaDichVu> HuyPhieuAsync(
             HuyPhieuViewModel model, int? maTaiKhoan, VaiTroEnum? vaiTro, bool modelHopLe)
         {
+            if (!maTaiKhoan.HasValue) return KetQuaDichVu.KhongTimThay();
+
             var phieu = await LayPhieuCuaNguoiDungAsync(model.MaPhieu, maTaiKhoan, vaiTro);
             if (phieu == null) return KetQuaDichVu.KhongTimThay();
 
@@ -290,8 +318,20 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
 
             if (!modelHopLe) return KetQuaDichVu.DuLieuKhongHopLe();
 
+            var lyDo = model.LyDo.Trim();
             phieu.TrangThai = TrangThaiPhieuEnum.Huy;
-            phieu.LyDoHuyTuChoi = model.LyDo.Trim();
+            phieu.LyDoHuyTuChoi = lyDo;
+
+            // Ghi lịch sử cùng lúc với đổi trạng thái (1 lần SaveChanges nên cùng thành công hoặc cùng thất bại).
+            await _uow.LichSuTrangThaiPhieus.AddAsync(new LichSuTrangThaiPhieu
+            {
+                MaPhieu = phieu.MaPhieu,
+                MaTaiKhoanThucHien = maTaiKhoan.Value,
+                TrangThaiCu = TrangThaiPhieuEnum.ChoXuLy,
+                TrangThaiMoi = TrangThaiPhieuEnum.Huy,
+                ThoiGian = DateTime.Now,
+                GhiChu = lyDo
+            });
             await _uow.SaveChangesAsync();
 
             return KetQuaDichVu.Ok($"Đã hủy phiếu {UiHelper.Ma("PSC", phieu.MaPhieu)}.");
