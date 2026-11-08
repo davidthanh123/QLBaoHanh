@@ -1,0 +1,42 @@
+@*
+   Họ và tên: Đào Hoàng Thành
+   Mã sinh viên: 23103100223
+   Nội dung thực hiện: Module 2 - Thêm thiết bị, tự gợi ý hạn bảo hành theo loại và ngày mua.
+*@
+@model ThietBi
+@{
+    ViewData["Title"] = "Thêm thiết bị";
+}
+
+<div class="page-header">
+    <div>
+        <h1>Thêm thiết bị</h1>
+        <p>Nhập thông tin thiết bị của khách hàng.</p>
+    </div>
+</div>
+
+<partial name="_Form" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+      
+        (function () {
+            var loai = document.getElementById('MaLoai');
+            var mua = document.getElementById('NgayMua');
+            var han = document.getElementById('HanBaoHanh');
+            function goiY() {
+                var opt = loai.options[loai.selectedIndex];
+                var thang = parseInt(opt ? opt.getAttribute('data-bh') : '');
+                if (!mua.value || isNaN(thang)) return;
+                var d = new Date(mua.value + 'T00:00:00');
+                var ngay = d.getDate();
+                d.setMonth(d.getMonth() + thang);
+                if (d.getDate() !== ngay) d.setDate(0); // 31/01 + 1 tháng -> 28/02
+                han.value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+            }
+            loai.addEventListener('change', goiY);
+            mua.addEventListener('change', goiY);
+        })();
+    </script>
+}
