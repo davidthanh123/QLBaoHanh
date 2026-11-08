@@ -1,5 +1,5 @@
-// Họ và tên: [điền họ tên của bạn]
-// Mã sinh viên: [điền mã sinh viên của bạn]
+// Họ và tên: David Thành
+// Mã sinh viên: 23103100239
 // Nội dung thực hiện: Kiểu kết quả dùng chung để Service báo lại cho Controller (thay cho TempData/RedirectToAction trong logic nghiệp vụ).
 
 namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services

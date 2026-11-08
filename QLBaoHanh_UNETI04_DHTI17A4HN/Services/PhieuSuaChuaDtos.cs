@@ -1,6 +1,10 @@
-// Họ và tên: [điền họ tên của bạn]
-// Mã sinh viên: [điền mã sinh viên của bạn]
-// Nội dung thực hiện: Các kiểu dữ liệu vào/ra của PhieuSuaChuaService.
+// Họ và tên: David Thành
+// Mã sinh viên: 23103100239
+// Nội dung thực hiện: Module 3 - kiểu dữ liệu ra của luồng tạo/theo dõi phiếu (tách Service khỏi Controller).
+//
+// Họ và tên: [người phụ trách Module 4 điền]
+// Mã sinh viên: [người phụ trách Module 4 điền]
+// Nội dung thực hiện: Module 4 - bộ lọc và kết quả của danh sách/chi tiết phiếu xử lý.
 
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models.Enums;

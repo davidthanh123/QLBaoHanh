@@ -1,3 +1,7 @@
+// Họ và tên: David Thành
+// Mã sinh viên: 23103100239
+// Nội dung thực hiện: Module 3 - ViewModel tạo phiếu sửa chữa và hủy phiếu.
+
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models.Enums;
