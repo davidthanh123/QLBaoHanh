@@ -1,0 +1,130 @@
+@*
+   Họ và tên: David Thành
+   Mã sinh viên: 23103100239
+   Nội dung thực hiện: Module 3 - Khách hàng theo dõi trạng thái và xem kết quả phiếu sửa chữa của mình.
+*@
+@model PhieuSuaChua
+@{
+    ViewData["Title"] = "Theo dõi phiếu sửa chữa";
+    var tongChiPhi = Model.ChiTietSuaChuas.Sum(c => c.ThanhTien);
+    var han = UiHelper.HanDuKien(Model.HanDuKien, Model.TrangThai);
+}
+
+<div class="page-header">
+    <div>
+        <h1>@UiHelper.Ma("PSC", Model.MaPhieu)</h1>
+        <p>Theo dõi tiến độ và kết quả xử lý phiếu sửa chữa của bạn.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-outline-secondary" asp-action="Index">Quay lại danh sách</a>
+        @if (Model.TrangThai == TrangThaiPhieuEnum.ChoXuLy)
+        {
+            <a class="btn btn-outline-danger" asp-action="Huy" asp-route-id="@Model.MaPhieu"><i class="bi bi-x-circle"></i> Hủy phiếu</a>
+        }
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <section class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h6 mb-0">Thông tin phiếu</h2>
+                    <partial name="_StatusBadge" model="UiHelper.Badge(Model.TrangThai)" />
+                </div>
+                <dl class="detail-grid">
+                    <div><dt>Thiết bị</dt><dd>@Model.ThietBi?.TenThietBi</dd></div>
+                    <div><dt>Số serial</dt><dd class="mono">@Model.ThietBi?.SerialNumber</dd></div>
+                    <div><dt>Loại thiết bị</dt><dd>@Model.ThietBi?.LoaiThietBi?.TenLoai</dd></div>
+                    <div><dt>Mức độ</dt><dd><partial name="_StatusBadge" model="UiHelper.Badge(Model.MucDo)" /></dd></div>
+                    <div><dt>Ngày tạo / tiếp nhận</dt><dd>@UiHelper.NgayGio(Model.NgayTiepNhan)</dd></div>
+                    <div>
+                        <dt>Hạn dự kiến</dt>
+                        <dd>
+                            @UiHelper.Ngay(Model.HanDuKien)
+                            @if (han is { } b) { <partial name="_StatusBadge" model="b" /> }
+                        </dd>
+                    </div>
+                    @if (Model.NgayHoanThanh.HasValue)
+                    {
+                        <div><dt>Ngày hoàn thành</dt><dd>@UiHelper.NgayGio(Model.NgayHoanThanh)</dd></div>
+                    }
+                    <div class="is-wide"><dt>Mô tả lỗi</dt><dd style="white-space: pre-line">@Model.NoiDungLoi</dd></div>
+                    @if (!string.IsNullOrWhiteSpace(Model.LyDoHuyTuChoi))
+                    {
+                        <div class="is-wide"><dt>Lý do @(Model.TrangThai == TrangThaiPhieuEnum.TuChoi ? "từ chối" : "hủy")</dt><dd>@Model.LyDoHuyTuChoi</dd></div>
+                    }
+                </dl>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h2 class="h6 mb-0">Kết quả chẩn đoán và chi phí</h2>
+                    <strong>@UiHelper.Tien(tongChiPhi)</strong>
+                </div>
+                @if (Model.ChiTietSuaChuas.Count == 0)
+                {
+                    <p class="text-muted mb-0">
+                        @(UiHelper.PhieuDaDong(Model.TrangThai)
+                            ? "Phiếu này không có chi tiết sửa chữa."
+                            : "Chưa có kết quả. Kết quả sẽ hiện ở đây sau khi kỹ thuật viên chẩn đoán và sửa chữa.")
+                    </p>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead><tr><th>Kết quả chẩn đoán</th><th>Hạng mục</th><th class="text-end">Thành tiền</th></tr></thead>
+                            <tbody>
+                                @foreach (var ct in Model.ChiTietSuaChuas)
+                                {
+                                    <tr>
+                                        <td>@(ct.KetQuaChanDoan ?? "—")</td>
+                                        <td>@(ct.LinhKien?.TenLinhKien ?? "Công sửa chữa") × @ct.SoLuong</td>
+                                        <td class="text-end">@UiHelper.Tien(ct.ThanhTien)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </section>
+    </div>
+
+    <div class="col-lg-5">
+        <section class="card">
+            <div class="card-body">
+                <h2 class="h6">Lịch sử xử lý</h2>
+                @if (Model.LichSus.Count == 0)
+                {
+                    <p class="text-muted mb-0">Chưa có lịch sử trạng thái.</p>
+                }
+                else
+                {
+                    <ol class="list-group list-group-numbered list-group-flush">
+                        @foreach (var log in Model.LichSus.OrderByDescending(l => l.ThoiGian))
+                        {
+                            <li class="list-group-item px-0">
+                                <div class="d-flex justify-content-between gap-2">
+                                    <span>
+                                        @(log.TrangThaiCu.HasValue ? UiHelper.Badge(log.TrangThaiCu.Value).Text : "Tạo phiếu")
+                                        <i class="bi bi-arrow-right mx-1"></i>
+                                        <strong>@UiHelper.Badge(log.TrangThaiMoi).Text</strong>
+                                    </span>
+                                    <small class="text-muted text-nowrap">@UiHelper.NgayGio(log.ThoiGian)</small>
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(log.GhiChu))
+                                {
+                                    <div>@log.GhiChu</div>
+                                }
+                            </li>
+                        }
+                    </ol>
+                }
+            </div>
+        </section>
+    </div>
+</div>

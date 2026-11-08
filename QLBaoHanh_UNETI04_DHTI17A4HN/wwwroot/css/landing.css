@@ -1,0 +1,321 @@
+/* landing.css - trang gioi thieu cong khai (chua dang nhap)
+   QUY TAC (Doc/GIAODIEN.md muc 1): KHONG ghi ma mau / co chu / bo goc truc tiep.
+   Chi dung bien var(--...) tu :root cua site.css. Tien to "lp-" de khong trung class khac.
+   File nay chi chua bo cuc rieng cua trang gioi thieu; component dung chung
+   (nut, card, badge, stepper, kpi-icon, empty-state) van lay tu site.css. */
+
+html {
+  scroll-behavior: smooth;
+}
+.lp-body {
+  background: var(--n-0);
+}
+.lp-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ===== Header ===== */
+.lp-header {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  background: var(--primary-800);
+  color: var(--n-0);
+}
+.lp-header-inner {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  min-height: var(--header-h);
+}
+.lp-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--n-0);
+  font-size: 20px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.lp-brand:hover {
+  color: var(--n-0);
+}
+.lp-brand i {
+  font-size: 24px;
+  color: var(--primary-300);
+}
+.lp-nav {
+  display: flex;
+  gap: 24px;
+  margin-left: auto;
+}
+.lp-nav a {
+  color: var(--primary-100);
+  text-decoration: none;
+  font-weight: 500;
+}
+.lp-nav a:hover {
+  color: var(--n-0);
+}
+.lp-btn-light {
+  --bs-btn-bg: var(--n-0);
+  --bs-btn-border-color: var(--n-0);
+  --bs-btn-color: var(--primary-700);
+  --bs-btn-hover-bg: var(--primary-50);
+  --bs-btn-hover-border-color: var(--primary-50);
+  --bs-btn-hover-color: var(--primary-800);
+  --bs-btn-active-bg: var(--primary-100);
+  --bs-btn-active-border-color: var(--primary-100);
+  --bs-btn-active-color: var(--primary-800);
+  font-weight: 600;
+  min-height: 40px;
+}
+
+/* ===== Hero ===== */
+.lp-hero {
+  background: linear-gradient(135deg, var(--primary-800), var(--primary-500));
+  color: var(--n-0);
+  padding: 64px 0;
+}
+.lp-hero-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 48px;
+  align-items: center;
+}
+.lp-eyebrow {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--primary-700);
+  color: var(--primary-100);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+.lp-hero h1 {
+  font-size: clamp(26px, 4vw, 38px);
+  line-height: 1.25;
+  margin-bottom: 16px;
+}
+.lp-lead {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--primary-100);
+  max-width: 540px;
+  margin-bottom: 28px;
+}
+.lp-hero-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.lp-hero-link {
+  color: var(--n-0);
+  font-weight: 500;
+  text-decoration: none;
+}
+.lp-hero-link:hover {
+  color: var(--n-0);
+  text-decoration: underline;
+}
+
+/* the phieu minh hoa */
+.lp-sample {
+  position: relative;
+  padding: 24px;
+  color: var(--n-900);
+  box-shadow: var(--shadow-pop);
+}
+.lp-sample-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.lp-sample-steps {
+  margin: 20px 0;
+}
+.lp-sample-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--n-100);
+  padding-top: 12px;
+}
+.lp-sample-note {
+  position: absolute;
+  top: -12px;
+  right: 16px;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-100);
+  color: var(--accent-700);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+}
+
+/* ===== Dai tinh nang nhanh ===== */
+.lp-quick {
+  background: var(--n-0);
+  border-bottom: 1px solid var(--n-100);
+  padding: 32px 0;
+}
+.lp-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+}
+.lp-quick-item {
+  text-align: center;
+}
+.lp-quick-item .kpi-icon {
+  margin: 0 auto 12px;
+}
+.lp-quick-item h3 {
+  margin-bottom: 4px;
+}
+.lp-quick-item p {
+  color: var(--n-500);
+  margin: 0;
+}
+
+/* ===== Section chung ===== */
+.lp-section {
+  padding: 56px 0;
+  scroll-margin-top: var(--header-h);
+}
+.lp-section-alt {
+  background: var(--n-25);
+}
+.lp-section-head {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.lp-section-head h2 {
+  margin-bottom: 4px;
+}
+.lp-section-head p {
+  color: var(--n-500);
+  margin: 0;
+}
+.lp-quick {
+  scroll-margin-top: var(--header-h);
+}
+
+/* ===== Vai tro ===== */
+.lp-role-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+.lp-role-card {
+  padding: 24px;
+}
+.lp-role-card h3 {
+  margin: 12px 0;
+}
+.lp-role-card ul {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--n-700);
+}
+.lp-role-card li + li {
+  margin-top: 8px;
+}
+
+/* ===== Quy trinh ===== */
+.lp-process {
+  padding: 32px 24px;
+}
+.lp-process-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+  margin-top: 28px;
+}
+.lp-process-grid p {
+  margin: 8px 0 0;
+  color: var(--n-700);
+}
+.lp-process-note {
+  margin: 24px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--n-100);
+  color: var(--n-500);
+}
+
+/* ===== Danh muc ===== */
+.lp-cat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+.lp-cat-card {
+  padding: 20px;
+}
+.lp-cat-warranty {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--n-100);
+  color: var(--n-600);
+}
+
+/* ===== CTA ===== */
+.lp-cta {
+  background: var(--primary-50);
+  border-top: 1px solid var(--primary-100);
+  padding: 40px 0;
+}
+.lp-cta-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.lp-cta h2 {
+  margin-bottom: 4px;
+}
+.lp-cta p {
+  margin: 0;
+  color: var(--n-600);
+}
+
+/* ===== Footer ===== */
+.lp-footer {
+  background: var(--primary-900);
+  color: var(--primary-100);
+  padding: 32px 0;
+}
+.lp-footer-brand {
+  color: var(--n-0);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.lp-footer p {
+  margin: 0;
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 900px) {
+  .lp-hero-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .lp-nav {
+    display: none;
+  }
+  .lp-header-inner {
+    justify-content: space-between;
+  }
+  .lp-hero {
+    padding: 40px 0;
+  }
+}

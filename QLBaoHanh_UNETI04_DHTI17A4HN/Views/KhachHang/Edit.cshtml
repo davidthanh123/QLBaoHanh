@@ -1,0 +1,22 @@
+@*
+   Họ và tên: David Thành
+   Mã sinh viên: 23103100239
+   Nội dung thực hiện: Module 3 - Giao diện sửa khách hàng.
+*@
+@model KhachHangFormViewModel
+@{
+    ViewData["Title"] = "Sửa khách hàng";
+}
+
+<div class="page-header">
+    <div>
+        <h1>Sửa khách hàng @UiHelper.Ma("KH", Model.MaKhachHang)</h1>
+        <p>Trạng thái hoạt động được đổi bằng nút riêng ở danh sách hoặc trang chi tiết.</p>
+    </div>
+</div>
+
+<partial name="_Form" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

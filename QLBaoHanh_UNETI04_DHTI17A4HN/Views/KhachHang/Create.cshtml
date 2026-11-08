@@ -1,0 +1,22 @@
+@*
+   Họ và tên: David Thành
+   Mã sinh viên: 23103100239
+   Nội dung thực hiện: Module 3 - Giao diện thêm khách hàng.
+*@
+@model KhachHangFormViewModel
+@{
+    ViewData["Title"] = "Thêm khách hàng";
+}
+
+<div class="page-header">
+    <div>
+        <h1>Thêm khách hàng</h1>
+        <p>CCCD không được trùng; khách hàng doanh nghiệp cần có mã số thuế.</p>
+    </div>
+</div>
+
+<partial name="_Form" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

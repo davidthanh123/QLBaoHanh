@@ -1,0 +1,194 @@
+@* Họ và tên: David Thành *@
+@* Mã sinh viên: 23103100239 *@
+@* Nội dung thực hiện: Trang giới thiệu công khai (chưa đăng nhập): hero, tính năng, quy trình, danh mục thiết bị. *@
+@model GioiThieuViewModel
+@{
+    Layout = "_PublicLayout";
+    ViewData["Title"] = "Quản lý bảo hành & sửa chữa thiết bị";
+}
+
+@* ===== 1. HERO ===== *@
+<section class="lp-hero">
+    <div class="lp-container lp-hero-grid">
+        <div>
+            <span class="lp-eyebrow">Bảo hành · Sửa chữa · Theo dõi</span>
+            <h1>Quản lý bảo hành và sửa chữa thiết bị, rõ ràng từ lúc tiếp nhận đến khi hoàn thành</h1>
+            <p class="lp-lead">
+                Gửi yêu cầu sửa chữa, kiểm tra thời hạn bảo hành và theo dõi từng bước xử lý ngay trên một hệ thống.
+            </p>
+            <div class="lp-hero-actions">
+                <a asp-controller="TaiKhoan" asp-action="DangNhap" class="btn btn-accent btn-lg">
+                    <i class="bi bi-box-arrow-in-right me-1"></i>Đăng nhập để sử dụng
+                </a>
+                <a href="#quy-trinh" class="lp-hero-link">Xem quy trình xử lý <i class="bi bi-arrow-down-short"></i></a>
+            </div>
+        </div>
+
+        @* Thẻ minh họa: dữ liệu mẫu cố định, không đọc từ DB *@
+        <aside class="lp-sample card" aria-label="Ví dụ phiếu sửa chữa">
+            <div class="lp-sample-head">
+                <span class="mono">@UiHelper.Ma("PSC", 7)</span>
+                <partial name="_StatusBadge" model="UiHelper.Badge(TrangThaiPhieuEnum.DangXuLy)" />
+            </div>
+            <div class="cell-title">Laptop Dell Inspiron 15</div>
+            <div class="cell-sub">Màn hình nhấp nháy khi khởi động</div>
+            <ol class="stepper lp-sample-steps">
+                <li class="step is-done">Chờ xử lý</li>
+                <li class="step is-current">Đang xử lý</li>
+                <li class="step">Hoàn thành</li>
+            </ol>
+            <div class="lp-sample-foot">
+                <span class="text-caption">Bảo hành</span>
+                <partial name="_StatusBadge" model="UiHelper.BaoHanh(DateTime.Today.AddDays(120))" />
+            </div>
+            <div class="lp-sample-note">Ví dụ minh họa</div>
+        </aside>
+    </div>
+</section>
+
+@* ===== 2. DẢI TÍNH NĂNG NHANH ===== *@
+<section class="lp-quick" id="tinh-nang">
+    <div class="lp-container lp-quick-grid">
+        <div class="lp-quick-item">
+            <span class="kpi-icon"><i class="bi bi-plus-circle"></i></span>
+            <h3>Đăng ký sửa chữa</h3>
+            <p>Chọn thiết bị, mô tả lỗi và gửi yêu cầu chỉ trong vài bước.</p>
+        </div>
+        <div class="lp-quick-item">
+            <span class="kpi-icon"><i class="bi bi-activity"></i></span>
+            <h3>Theo dõi trạng thái</h3>
+            <p>Biết phiếu đang chờ, đang xử lý hay đã hoàn thành.</p>
+        </div>
+        <div class="lp-quick-item">
+            <span class="kpi-icon"><i class="bi bi-shield-check"></i></span>
+            <h3>Kiểm tra bảo hành</h3>
+            <p>Thiết bị còn, sắp hết hay đã hết bảo hành, kèm số ngày còn lại.</p>
+        </div>
+        <div class="lp-quick-item">
+            <span class="kpi-icon"><i class="bi bi-clock-history"></i></span>
+            <h3>Lịch sử xử lý</h3>
+            <p>Mọi lần đổi trạng thái của phiếu đều được lưu lại.</p>
+        </div>
+    </div>
+</section>
+
+@* ===== 3. THEO VAI TRÒ ===== *@
+<section class="lp-section">
+    <div class="lp-container">
+        <div class="lp-section-head">
+            <h2>Mỗi người dùng một góc nhìn riêng</h2>
+            <p>Hệ thống phân quyền theo vai trò, mỗi người chỉ thấy đúng phần việc của mình.</p>
+        </div>
+        <div class="lp-role-grid">
+            <article class="card lp-role-card">
+                <partial name="_StatusBadge" model="UiHelper.Badge(VaiTroEnum.KhachHang)" />
+                <h3>Dành cho khách hàng</h3>
+                <ul>
+                    <li>Xem thiết bị và thời hạn bảo hành của mình</li>
+                    <li>Tạo phiếu sửa chữa và hủy khi còn chờ xử lý</li>
+                    <li>Theo dõi tiến độ và xem kết quả xử lý</li>
+                </ul>
+            </article>
+            <article class="card lp-role-card">
+                <partial name="_StatusBadge" model="UiHelper.Badge(VaiTroEnum.NhanVien)" />
+                <h3>Dành cho nhân viên kỹ thuật</h3>
+                <ul>
+                    <li>Quản lý thiết bị, khách hàng và phiếu sửa chữa</li>
+                    <li>Tiếp nhận, chẩn đoán và cập nhật trạng thái</li>
+                    <li>Ghi nhận linh kiện sử dụng và chi phí</li>
+                </ul>
+            </article>
+            <article class="card lp-role-card">
+                <partial name="_StatusBadge" model="UiHelper.Badge(VaiTroEnum.Admin)" />
+                <h3>Dành cho quản trị viên</h3>
+                <ul>
+                    <li>Quản lý tài khoản và phân quyền</li>
+                    <li>Quản lý loại thiết bị, linh kiện, kỹ thuật viên</li>
+                    <li>Xem nhật ký đăng nhập, Dashboard và thống kê</li>
+                </ul>
+            </article>
+        </div>
+    </div>
+</section>
+
+@* ===== 4. QUY TRÌNH ===== *@
+<section class="lp-section lp-section-alt" id="quy-trinh">
+    <div class="lp-container">
+        <div class="lp-section-head">
+            <h2>Quy trình xử lý một phiếu sửa chữa</h2>
+            <p>Mỗi phiếu đi qua ba bước theo đúng thứ tự, không thể nhảy cóc.</p>
+        </div>
+        <div class="card lp-process">
+            <ol class="stepper">
+                <li class="step is-done">Chờ xử lý</li>
+                <li class="step is-done">Đang xử lý</li>
+                <li class="step is-current">Hoàn thành</li>
+            </ol>
+            <div class="lp-process-grid">
+                <div>
+                    <partial name="_StatusBadge" model="UiHelper.Badge(TrangThaiPhieuEnum.ChoXuLy)" />
+                    <p>Khách gửi yêu cầu. Phiếu đang chờ nhân viên tiếp nhận; khách vẫn có thể hủy ở bước này.</p>
+                </div>
+                <div>
+                    <partial name="_StatusBadge" model="UiHelper.Badge(TrangThaiPhieuEnum.DangXuLy)" />
+                    <p>Kỹ thuật viên chẩn đoán, thay linh kiện và sửa chữa thiết bị.</p>
+                </div>
+                <div>
+                    <partial name="_StatusBadge" model="UiHelper.Badge(TrangThaiPhieuEnum.HoanThanh)" />
+                    <p>Thiết bị đã sửa xong. Khách xem được kết quả và chi phí phát sinh.</p>
+                </div>
+            </div>
+            <p class="lp-process-note">
+                Phiếu có thể ở trạng thái
+                <partial name="_StatusBadge" model="UiHelper.Badge(TrangThaiPhieuEnum.Huy)" /> hoặc
+                <partial name="_StatusBadge" model="UiHelper.Badge(TrangThaiPhieuEnum.TuChoi)" />
+                kèm lý do, khi đáp ứng điều kiện nghiệp vụ.
+            </p>
+        </div>
+    </div>
+</section>
+
+@* ===== 5. DANH MỤC THIẾT BỊ (đọc từ DB) ===== *@
+<section class="lp-section" id="danh-muc">
+    <div class="lp-container">
+        <div class="lp-section-head">
+            <h2>Danh mục thiết bị tiếp nhận</h2>
+            <p>Các loại thiết bị hiện đang được hỗ trợ bảo hành và sửa chữa.</p>
+        </div>
+
+        @if (!Model.LoaiThietBis.Any())
+        {
+            <div class="card">
+                <div class="card-body empty-state text-center">
+                    <i class="bi bi-box-seam fs-2 d-block mb-2"></i>
+                    <h3>Chưa có loại thiết bị nào</h3>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="lp-cat-grid">
+                @foreach (var l in Model.LoaiThietBis)
+                {
+                    <div class="card card-hover lp-cat-card">
+                        <span class="kpi-icon"><i class="bi bi-pc-display"></i></span>
+                        <div class="cell-title">@l.TenLoai</div>
+                        <div class="cell-sub">@l.HangSanXuat</div>
+                        <div class="lp-cat-warranty">Bảo hành mặc định <strong>@l.ThoiHanBaoHanhMacDinh tháng</strong></div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+@* ===== 6. KÊU GỌI HÀNH ĐỘNG ===== *@
+<section class="lp-cta">
+    <div class="lp-container lp-cta-inner">
+        <div>
+            <h2>Sẵn sàng theo dõi thiết bị của bạn?</h2>
+            <p>Đăng nhập để tạo phiếu sửa chữa và xem tình trạng xử lý.</p>
+        </div>
+        <a asp-controller="TaiKhoan" asp-action="DangNhap" class="btn btn-primary btn-lg">Đăng nhập</a>
+    </div>
+</section>

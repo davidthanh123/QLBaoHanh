@@ -3,8 +3,8 @@
 // Nội dung thực hiện: Module 1 - nghiệp vụ Loại thiết bị (tách từ LoaiThietBiController).
 
 using Microsoft.EntityFrameworkCore;
-using QLBaoHanh_UNETI04_DHTI17A4HN.Data;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models;
+using QLBaoHanh_UNETI04_DHTI17A4HN.Repositories;
 using QLBaoHanh_UNETI04_DHTI17A4HN.ViewModels;
 
 namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
@@ -12,38 +12,24 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
     public class LoaiThietBiService : ILoaiThietBiService
     {
         private const string LoiTrungTen = "Tên loại thiết bị đã tồn tại";
-        private readonly AppDbContext _db;
-        public LoaiThietBiService(AppDbContext db) => _db = db;
+        private readonly IUnitOfWork _uow;
 
-        public async Task<List<LoaiThietBiDongViewModel>> LayDanhSachAsync(string? tuKhoa, bool? trangThai)
-        {
-            var query = _db.LoaiThietBis.AsNoTracking().AsQueryable();
+        public LoaiThietBiService(IUnitOfWork uow) => _uow = uow;
 
-            if (!string.IsNullOrWhiteSpace(tuKhoa))
-            {
-                var k = tuKhoa.Trim();
-                query = query.Where(l => l.TenLoai.Contains(k) || l.HangSanXuat.Contains(k));
-            }
-            if (trangThai.HasValue)
-                query = query.Where(l => l.TrangThai == trangThai.Value);
-
-            return await query
-                .OrderBy(l => l.TenLoai)
-                .Select(l => new LoaiThietBiDongViewModel { Loai = l, SoThietBi = l.ThietBis.Count })
-                .ToListAsync();
-        }
+        public Task<List<LoaiThietBiDongViewModel>> LayDanhSachAsync(string? tuKhoa, bool? trangThai) =>
+            _uow.LoaiThietBis.LayDanhSachDongAsync(tuKhoa, trangThai);
 
         public async Task<ChiTietLoaiThietBi?> LayChiTietAsync(int id)
         {
-            var loai = await _db.LoaiThietBis.AsNoTracking().FirstOrDefaultAsync(l => l.MaLoai == id);
+            var loai = await _uow.LoaiThietBis.GetByIdAsync(id);
             if (loai == null) return null;
 
-            var soThietBi = await _db.ThietBis.CountAsync(t => t.MaLoai == id);
+            var soThietBi = await _uow.LoaiThietBis.DemSoThietBiTheoLoaiAsync(id);
             return new ChiTietLoaiThietBi(loai, soThietBi);
         }
 
         public Task<LoaiThietBi?> LayDeSuaAsync(int id) =>
-            _db.LoaiThietBis.AsNoTracking().FirstOrDefaultAsync(l => l.MaLoai == id);
+            _uow.LoaiThietBis.GetByIdAsync(id);
 
         public async Task<KetQuaDichVu> ThemAsync(LoaiThietBi model, bool modelHopLe)
         {
@@ -52,10 +38,10 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
             if (!modelHopLe || loi.Count > 0)
                 return KetQuaDichVu.DuLieuKhongHopLe(loi);
 
-            _db.LoaiThietBis.Add(model);
+            await _uow.LoaiThietBis.AddAsync(model);
             try
             {
-                await _db.SaveChangesAsync();
+                await _uow.SaveChangesAsync();
             }
             catch (DbUpdateException)
             {
@@ -67,7 +53,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
 
         public async Task<KetQuaDichVu> CapNhatAsync(int id, LoaiThietBi model, bool modelHopLe)
         {
-            var loai = await _db.LoaiThietBis.FirstOrDefaultAsync(l => l.MaLoai == id);
+            var loai = await _uow.LoaiThietBis.GetByIdAsync(id);
             if (loai == null) return KetQuaDichVu.KhongTimThay();
 
             ChuanHoa(model);
@@ -75,7 +61,6 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
             if (!modelHopLe || loi.Count > 0)
                 return KetQuaDichVu.DuLieuKhongHopLe(loi);
 
-            // Chỉ cập nhật các trường cho phép sửa trên bản ghi gốc
             loai.TenLoai = model.TenLoai;
             loai.HangSanXuat = model.HangSanXuat;
             loai.MoTa = model.MoTa;
@@ -84,7 +69,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
 
             try
             {
-                await _db.SaveChangesAsync();
+                await _uow.SaveChangesAsync();
             }
             catch (DbUpdateException)
             {
@@ -94,34 +79,32 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
             return KetQuaDichVu.Ok($"Đã cập nhật loại thiết bị {loai.TenLoai}.");
         }
 
-        // Ngừng sử dụng / sử dụng lại (đảo TrangThai).
         public async Task<KetQuaDichVu> DoiTrangThaiAsync(int id)
         {
-            var loai = await _db.LoaiThietBis.FirstOrDefaultAsync(l => l.MaLoai == id);
+            var loai = await _uow.LoaiThietBis.GetByIdAsync(id);
             if (loai == null) return KetQuaDichVu.KhongTimThay();
 
             loai.TrangThai = !loai.TrangThai;
-            await _db.SaveChangesAsync();
+            await _uow.SaveChangesAsync();
 
             return KetQuaDichVu.Ok(loai.TrangThai
                 ? $"Đã cho phép sử dụng lại loại thiết bị {loai.TenLoai}."
                 : $"Đã ngừng sử dụng loại thiết bị {loai.TenLoai}.");
         }
 
-        // Xóa an toàn: đã có thiết bị tham chiếu thì không xóa, gợi ý "Ngừng sử dụng".
         public async Task<KetQuaDichVu> XoaAsync(int id)
         {
-            var loai = await _db.LoaiThietBis.FirstOrDefaultAsync(l => l.MaLoai == id);
+            var loai = await _uow.LoaiThietBis.GetByIdAsync(id);
             if (loai == null) return KetQuaDichVu.KhongTimThay();
 
-            var soThietBi = await _db.ThietBis.CountAsync(t => t.MaLoai == id);
+            var soThietBi = await _uow.LoaiThietBis.DemSoThietBiTheoLoaiAsync(id);
             if (soThietBi > 0)
                 return KetQuaDichVu.Loi($"Không thể xóa: loại thiết bị {loai.TenLoai} đang có {soThietBi} thiết bị sử dụng. Hãy chọn Ngừng sử dụng thay vì xóa.");
 
-            _db.LoaiThietBis.Remove(loai);
+            _uow.LoaiThietBis.Remove(loai);
             try
             {
-                await _db.SaveChangesAsync();
+                await _uow.SaveChangesAsync();
                 return KetQuaDichVu.Ok($"Đã xóa loại thiết bị {loai.TenLoai}.");
             }
             catch (DbUpdateException)
@@ -139,12 +122,11 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
             model.MoTa = string.IsNullOrWhiteSpace(model.MoTa) ? null : model.MoTa.Trim();
         }
 
-        // Báo lỗi thân thiện trước khi chạm unique index. id = 0 khi thêm mới.
         private async Task<List<LoiTruongNhap>> KiemTraTrungTenAsync(LoaiThietBi model, int id)
         {
             var loi = new List<LoiTruongNhap>();
             if (string.IsNullOrEmpty(model.TenLoai)) return loi;
-            if (await _db.LoaiThietBis.AnyAsync(l => l.TenLoai == model.TenLoai && l.MaLoai != id))
+            if (await _uow.LoaiThietBis.KiemTraTrungTenAsync(model.TenLoai, id))
                 loi.Add(new(nameof(model.TenLoai), LoiTrungTen));
             return loi;
         }

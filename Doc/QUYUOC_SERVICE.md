@@ -5,7 +5,7 @@ Mục đích: các module viết Service theo cùng một khuôn để tên hàm
 ## 1. Cấu trúc
 
 - Mỗi Entity chính có 1 cặp file trong `Services/`: `IXxxService.cs` (interface) và `XxxService.cs` (cài đặt). Tên theo tên Entity, PascalCase, số ít.
-- Service nhận `AppDbContext` qua constructor, **không** tạo Repository riêng (`DbSet` của EF Core đã đóng vai trò đó).
+- Service nhận `IUnitOfWork` (hoặc Repository chuyên biệt) qua constructor, tách biệt tầng truy cập dữ liệu (Data Access Layer) khỏi logic nghiệp vụ.
 - Đăng ký trong `Program.cs`: `builder.Services.AddScoped<IXxxService, XxxService>();`
 - Controller chỉ làm 3 việc: nhận request, kiểm tra quyền (`[PhanQuyen]`), chọn View/Redirect theo kết quả Service. Truy vấn LINQ và quy tắc nghiệp vụ nằm trong Service.
 - Service **không** dùng `TempData`, `ModelState`, `Session`, `View`, `Redirect`. Cần thông tin phiên đăng nhập thì Controller lấy rồi truyền vào tham số (`maTaiKhoan`, `vaiTro`).

@@ -1,8 +1,13 @@
-// Họ và tên: [điền họ tên của bạn]
-// Mã sinh viên: [điền mã sinh viên của bạn]
-// Nội dung thực hiện: Module 4 - hợp đồng (interface) của nghiệp vụ phiếu sửa chữa.
+// Họ và tên: David Thành
+// Mã sinh viên: 23103100239
+// Nội dung thực hiện: Module 3 - hợp đồng nghiệp vụ tạo phiếu, hủy phiếu và theo dõi phiếu của khách hàng.
+//
+// Họ và tên: [người phụ trách Module 4 điền]
+// Mã sinh viên: [người phụ trách Module 4 điền]
+// Nội dung thực hiện: Module 4 - hợp đồng nghiệp vụ tiếp nhận, xử lý và quản lý trạng thái phiếu sửa chữa.
 
 using Microsoft.AspNetCore.Mvc.Rendering;
+using QLBaoHanh_UNETI04_DHTI17A4HN.Models;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models.Enums;
 using QLBaoHanh_UNETI04_DHTI17A4HN.ViewModels;
 
@@ -20,7 +25,10 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
 
         Task<int?> LayMaKhachHangHienTaiAsync(int? maTaiKhoan);
         Task<List<SelectListItem>> LayThietBiCoTheSuaAsync(int maKhachHang);
-        Task<KetQuaDichVu> TaoPhieuAsync(int maKhachHang, TaoPhieuSuaChuaViewModel model, bool modelHopLe);
+        Task<KetQuaDichVu> TaoPhieuAsync(int maKhachHang, int maTaiKhoan, TaoPhieuSuaChuaViewModel model, bool modelHopLe);
+
+        /// <summary>Chi tiết phiếu cho khách hàng. Trả về null nếu phiếu không tồn tại hoặc không phải của khách này (đổi mã trên URL không lộ dữ liệu).</summary>
+        Task<PhieuSuaChua?> LayChiTietCuaToiAsync(int maPhieu, int? maTaiKhoan);
 
         Task<KetQuaDichVu> KiemTraCoTheHuyAsync(int maPhieu, int? maTaiKhoan, VaiTroEnum? vaiTro);
         Task<KetQuaDichVu> HuyPhieuAsync(HuyPhieuViewModel model, int? maTaiKhoan, VaiTroEnum? vaiTro, bool modelHopLe);
