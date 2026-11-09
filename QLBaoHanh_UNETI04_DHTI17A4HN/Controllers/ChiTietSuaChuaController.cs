@@ -4,8 +4,11 @@ using QLBaoHanh_UNETI04_DHTI17A4HN.Helpers;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Services;
 
+using QLBaoHanh_UNETI04_DHTI17A4HN.Models.Enums;
+
 namespace QLBaoHanh_UNETI04_DHTI17A4HN.Controllers
 {
+    [PhanQuyen(VaiTroEnum.Admin, VaiTroEnum.NhanVien)]
     public class ChiTietSuaChuaController : Controller
     {
         // Controller này dùng khóa TempData "Success"/"Error" (khác "ThanhCong"/"Loi" của các module khác).
