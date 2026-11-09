@@ -1,6 +1,6 @@
-// Họ và tên: [điền họ tên của bạn]
-// Mã sinh viên: [điền mã sinh viên của bạn]
-// Nội dung thực hiện: Module 1 - Xem nhật ký đăng nhập (chỉ đọc), tách từ NhatKyDangNhapController.
+// Họ và tên: Bùi Hồng Vân
+// Mã sinh viên: 23103100203
+// Nội dung thực hiện: Module 1 - Service NhatKyDangNhap - tra cứu lịch sử đăng nhập hệ thống cho Admin.
 
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models.Enums;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Repositories;

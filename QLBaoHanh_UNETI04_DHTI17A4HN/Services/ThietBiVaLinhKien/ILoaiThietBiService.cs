@@ -1,6 +1,6 @@
-// Họ và tên: [điền họ tên của bạn]
-// Mã sinh viên: [điền mã sinh viên của bạn]
-// Nội dung thực hiện: Module 1 - nghiệp vụ Loại thiết bị (tách từ LoaiThietBiController).
+// Họ và tên: Bùi Hồng Vân
+// Mã sinh viên: 23103100203
+// Nội dung thực hiện: Module 1 - Interface Service LoaiThietBi - định nghĩa nghiệp vụ quản lý loại thiết bị.
 
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models;
 using QLBaoHanh_UNETI04_DHTI17A4HN.ViewModels;

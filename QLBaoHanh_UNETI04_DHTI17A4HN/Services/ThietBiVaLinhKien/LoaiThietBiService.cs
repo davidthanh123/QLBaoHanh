@@ -1,6 +1,6 @@
-// Họ và tên: [điền họ tên của bạn]
-// Mã sinh viên: [điền mã sinh viên của bạn]
-// Nội dung thực hiện: Module 1 - nghiệp vụ Loại thiết bị (tách từ LoaiThietBiController).
+// Họ và tên: Bùi Hồng Vân
+// Mã sinh viên: 23103100203
+// Nội dung thực hiện: Module 1 - Service LoaiThietBi - thực hiện nghiệp vụ CRUD loại thiết bị, chống xóa khi có thiết bị.
 
 using Microsoft.EntityFrameworkCore;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models;
