@@ -1,3 +1,7 @@
+// Họ và tên: Bùi Hồng Vân
+// Mã sinh viên: 23103100203
+// Nội dung thực hiện: Module 1 - Repository NhatKyDangNhap - lưu và truy vấn lịch sử đăng nhập hệ thống.
+
 using Microsoft.EntityFrameworkCore;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Data;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models;
