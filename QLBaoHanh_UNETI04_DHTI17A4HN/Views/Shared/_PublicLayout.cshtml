@@ -1,7 +1,6 @@
 @* Họ và tên: David Thành *@
 @* Mã sinh viên: 23103100239 *@
-@* Nội dung thực hiện: Layout cho trang giới thiệu công khai (chưa đăng nhập): thanh trên cùng + nút Đăng nhập, không sidebar. *@
-@* Dùng trong View: @{ Layout = "_PublicLayout"; ViewData["Title"] = "..."; } *@
+@* Nội dung thực hiện: Layout công khai cho trang giới thiệu, không sidebar. *@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -16,18 +15,21 @@
 <body class="lp-body">
     <header class="lp-header">
         <div class="lp-container lp-header-inner">
-            <a class="lp-brand" asp-controller="Home" asp-action="Index">
-                <i class="bi bi-shield-check"></i>
-                <span>QLBaoHanh</span>
+            <a class="lp-brand" asp-controller="Home" asp-action="Index" aria-label="QLBaoHanh - Trang chủ">
+                <span class="lp-brand-mark"><i class="bi bi-shield-check"></i></span>
+                <span class="lp-brand-name">QLBaoHanh<small>WARRANTY MANAGEMENT</small></span>
             </a>
-            <nav class="lp-nav" aria-label="Điều hướng chính">
-                <a href="#tinh-nang">Tính năng</a>
-                <a href="#quy-trinh">Quy trình</a>
-                <a href="#danh-muc">Danh mục thiết bị</a>
-            </nav>
-            <a asp-controller="TaiKhoan" asp-action="DangNhap" class="btn lp-btn-light">
-                <i class="bi bi-box-arrow-in-right me-1"></i>Đăng nhập
-            </a>
+            <button class="lp-menu-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#lp-navigation" aria-controls="lp-navigation" aria-expanded="false" aria-label="Mở menu">
+                <i class="bi bi-list"></i>
+            </button>
+            <div class="collapse lp-nav-wrap" id="lp-navigation">
+                <nav class="lp-nav" aria-label="Điều hướng chính">
+                    <a href="#tinh-nang">Tính năng</a>
+                    <a href="#quy-trinh">Quy trình</a>
+                    <a href="#danh-muc">Thiết bị</a>
+                </nav>
+                <a asp-controller="TaiKhoan" asp-action="DangNhap" class="btn btn-primary lp-login-btn"><i class="bi bi-box-arrow-in-right"></i> Đăng nhập</a>
+            </div>
         </div>
     </header>
 
@@ -36,10 +38,12 @@
     </main>
 
     <footer class="lp-footer">
-        <div class="lp-container">
-            <div class="lp-footer-brand"><i class="bi bi-shield-check"></i> QLBaoHanh</div>
-            <p>Hệ thống quản lý bảo hành và sửa chữa thiết bị · Đề tài 17 · UNETI04 · DHTI17A4HN</p>
+        <div class="lp-container lp-footer-main">
+            <div class="lp-footer-about"><div class="lp-footer-brand"><i class="bi bi-shield-check"></i> QLBaoHanh</div><p>Hệ thống quản lý bảo hành và sửa chữa thiết bị, kết nối khách hàng và đội ngũ kỹ thuật trên cùng một nền tảng.</p></div>
+            <div class="lp-footer-links"><span>KHÁM PHÁ</span><a href="#tinh-nang">Tính năng</a><a href="#quy-trinh">Quy trình xử lý</a><a href="#danh-muc">Danh mục thiết bị</a></div>
+            <div class="lp-footer-links"><span>TÀI KHOẢN</span><a asp-controller="TaiKhoan" asp-action="DangNhap">Đăng nhập hệ thống</a></div>
         </div>
+        <div class="lp-container lp-footer-bottom"><span>© @DateTime.Now.Year QLBaoHanh</span><span>Đề tài 17 · UNETI04 · DHTI17A4HN</span></div>
     </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
