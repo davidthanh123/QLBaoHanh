@@ -1,9 +1,12 @@
 ﻿﻿
 using Microsoft.AspNetCore.Mvc;
+using QLBaoHanh_UNETI04_DHTI17A4HN.Helpers;
+using QLBaoHanh_UNETI04_DHTI17A4HN.Models.Enums;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Services;
 
 namespace QLBaoHanh_UNETI04_DHTI17A4HN.Controllers
 {
+    [PhanQuyen(VaiTroEnum.Admin)]
     public class DashboardController : Controller
     {
         private readonly IDashboardService _service;
