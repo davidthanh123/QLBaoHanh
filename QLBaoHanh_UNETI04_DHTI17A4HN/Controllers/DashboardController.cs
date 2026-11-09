@@ -1,3 +1,4 @@
+﻿﻿
 using Microsoft.AspNetCore.Mvc;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Helpers;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models.Enums;
@@ -10,12 +11,16 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Controllers
     {
         private readonly IDashboardService _service;
 
-        public DashboardController(IDashboardService service) => _service = service;
+        public DashboardController(IDashboardService service)
+        {
+            _service = service;
+        }
 
         public async Task<IActionResult> Index()
         {
             var tk = await _service.LayThongKeAsync();
 
+            // Thống kê tổng quan
             ViewBag.TongKhachHang = tk.TongKhachHang;
             ViewBag.TongThietBi = tk.TongThietBi;
             ViewBag.TongPhieuSuaChua = tk.TongPhieuSuaChua;
@@ -23,6 +28,18 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Controllers
             ViewBag.TongKyThuatVien = tk.TongKyThuatVien;
             ViewBag.TongChiTietSuaChua = tk.TongChiTietSuaChua;
             ViewBag.TongGiaTriSuaChua = tk.TongGiaTriSuaChua;
+
+            // Thống kê chi tiết
+            ViewBag.TheoTrangThai = tk.TheoTrangThai;
+            ViewBag.TheoLoaiThietBi = tk.TheoLoaiThietBi;
+            ViewBag.TheoKyThuatVien = tk.TheoKyThuatVien;
+
+            // Chỉ số hiệu suất
+            ViewBag.ThoiGianSuaChuaTrungBinh =
+                tk.ThoiGianSuaChuaTrungBinh;
+
+            ViewBag.TyLeSuaChuaBaoHanh =
+                tk.TyLeSuaChuaBaoHanh;
 
             return View();
         }
