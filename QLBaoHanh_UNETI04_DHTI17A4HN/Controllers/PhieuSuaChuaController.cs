@@ -1,6 +1,10 @@
-﻿// Họ và tên: [điền họ tên của bạn]
-// Mã sinh viên: [điền mã sinh viên của bạn]
-// Nội dung thực hiện: Module 4 - tiếp nhận, xử lý và quản lý trạng thái phiếu sửa chữa.
+﻿// Họ và tên: David Thành
+// Mã sinh viên: 23103100239
+// Nội dung thực hiện: Module 3 - tạo phiếu, theo dõi phiếu của khách hàng, hủy phiếu (Create, TheoDoi, Huy).
+//
+// Họ và tên: [người phụ trách Module 4 điền]
+// Mã sinh viên: [người phụ trách Module 4 điền]
+// Nội dung thực hiện: Module 4 - tiếp nhận, xử lý và quản lý trạng thái phiếu sửa chữa (Index, Details, ThemChiTietSuaChua, CapNhatTrangThai).
 
 using Microsoft.AspNetCore.Mvc;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Helpers;
@@ -85,8 +89,20 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Controllers
             return RedirectToAction(nameof(Details), new { id });
         }
 
+        // Khách hàng xem chi tiết/kết quả phiếu của chính mình (đề mục 7.5, 17.1).
+        // Phiếu của người khác -> NotFound nên đổi mã trên URL không lộ dữ liệu.
+        [PhanQuyen(VaiTroEnum.KhachHang)]
+        public async Task<IActionResult> TheoDoi(int id)
+        {
+            var phieu = await _service.LayChiTietCuaToiAsync(id, HttpContext.Session.LayMaTaiKhoan());
+            if (phieu == null) return NotFound();
+
+            return View(phieu);
+        }
+
+        // maThietBi: nút "Tạo phiếu sửa chữa" ở danh sách thiết bị (Module 2) truyền sang để chọn sẵn thiết bị.
         [HttpGet]
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult> Create(int? maThietBi)
         {
             var maKhachHang = await _service.LayMaKhachHangHienTaiAsync(HttpContext.Session.LayMaTaiKhoan());
             if (maKhachHang == null)
@@ -99,48 +115,36 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Controllers
             {
                 ThietBiCoTheSua = await _service.LayThietBiCoTheSuaAsync(maKhachHang.Value)
             };
+            // Chỉ chọn sẵn khi thiết bị nằm trong danh sách được phép (thuộc khách này, đang khả dụng).
+            if (maThietBi.HasValue && model.ThietBiCoTheSua.Any(t => t.Value == maThietBi.Value.ToString()))
+                model.MaThietBi = maThietBi;
             return View(model);
         }
 
         [HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> Create(TaoPhieuSuaChuaViewModel model)
-{
-    var maTaiKhoan = HttpContext.Session.LayMaTaiKhoan();
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(TaoPhieuSuaChuaViewModel model)
+        {
+            var maTaiKhoan = HttpContext.Session.LayMaTaiKhoan();
+            var maKhachHang = await _service.LayMaKhachHangHienTaiAsync(maTaiKhoan);
+            if (maTaiKhoan == null || maKhachHang == null)
+            {
+                TempData["Loi"] = "Không tìm thấy hồ sơ khách hàng đang hoạt động.";
+                return RedirectToAction(nameof(Index));
+            }
 
-    if (!maTaiKhoan.HasValue)
-    {
-        TempData["Loi"] = "Không xác định được tài khoản đăng nhập.";
-        return RedirectToAction(nameof(Index));
-    }
+            var ketQua = await _service.TaoPhieuAsync(maKhachHang.Value, maTaiKhoan.Value, model, ModelState.IsValid);
+            if (!ketQua.ThanhCong)
+            {
+                ketQua.GopLoiVaoModelState(ModelState);
 
-    var maKhachHang = await _service.LayMaKhachHangHienTaiAsync(maTaiKhoan);
+                model.ThietBiCoTheSua = await _service.LayThietBiCoTheSuaAsync(maKhachHang.Value);
+                return View(model);
+            }
 
-    if (maKhachHang == null)
-    {
-        TempData["Loi"] = "Không tìm thấy hồ sơ khách hàng đang hoạt động.";
-        return RedirectToAction(nameof(Index));
-    }
-
-    var ketQua = await _service.TaoPhieuAsync(
-        maKhachHang.Value,
-        maTaiKhoan.Value,
-        model,
-        ModelState.IsValid);
-
-    if (!ketQua.ThanhCong)
-    {
-        ketQua.GopLoiVaoModelState(ModelState);
-
-        model.ThietBiCoTheSua =
-            await _service.LayThietBiCoTheSuaAsync(maKhachHang.Value);
-
-        return View(model);
-    }
-
-    TempData["ThanhCong"] = ketQua.ThongBao;
-    return RedirectToAction(nameof(Index));
-}
+            TempData["ThanhCong"] = ketQua.ThongBao;
+            return RedirectToAction(nameof(Index));
+        }
 
         [HttpGet]
         public async Task<IActionResult> Huy(int id)

@@ -1,5 +1,9 @@
-// Họ và tên: [điền họ tên của bạn]
-// Mã sinh viên: [điền mã sinh viên của bạn]
+// Họ và tên: David Thành
+// Mã sinh viên: 23103100239
+// Nội dung thực hiện: Module 3 - tạo phiếu (kiểm tra điều kiện, chống trùng), hủy phiếu, theo dõi phiếu của khách hàng, ghi lịch sử trạng thái khi tạo/hủy.
+//
+// Họ và tên: [người phụ trách Module 4 điền]
+// Mã sinh viên: [người phụ trách Module 4 điền]
 // Nội dung thực hiện: Module 4 - nghiệp vụ tiếp nhận, xử lý và quản lý trạng thái phiếu sửa chữa (tách từ PhieuSuaChuaController).
 
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -231,64 +235,65 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
             }).ToList();
         }
 
-       public async Task<KetQuaDichVu> TaoPhieuAsync(
-    int maKhachHang, int maTaiKhoan,
-    TaoPhieuSuaChuaViewModel model, bool modelHopLe)
-{
-    var loi = new List<LoiTruongNhap>();
+        public async Task<KetQuaDichVu> TaoPhieuAsync(int maKhachHang, int maTaiKhoan, TaoPhieuSuaChuaViewModel model, bool modelHopLe)
+        {
+            var loi = new List<LoiTruongNhap>();
 
-    if (model.HanDuKien.HasValue && model.HanDuKien.Value.Date < DateTime.Today)
-        loi.Add(new(nameof(model.HanDuKien), "Ngày hẹn dự kiến không được ở trong quá khứ."));
+            if (model.HanDuKien.HasValue && model.HanDuKien.Value.Date < DateTime.Today)
+                loi.Add(new(nameof(model.HanDuKien), "Ngày hẹn dự kiến không được ở trong quá khứ."));
 
-    ThietBi? thietBi = null;
+            ThietBi? thietBi = null;
+            if (model.MaThietBi.HasValue)
+            {
+                thietBi = await _uow.ThietBis.GetByIdAsync(model.MaThietBi.Value);
+                if (thietBi == null || thietBi.MaKhachHang != maKhachHang)
+                    loi.Add(new(nameof(model.MaThietBi), "Thiết bị không tồn tại hoặc không thuộc quyền sở hữu của bạn."));
+                else if (thietBi.TrangThai != TrangThaiThietBiEnum.KhaDung)
+                    loi.Add(new(nameof(model.MaThietBi), "Thiết bị hiện không ở trạng thái khả dụng để tiếp nhận sửa chữa."));
+                else if (await _uow.PhieuSuaChuas.KiemTraThietBiCoPhieuMoHoacDangSuaAsync(thietBi.MaThietBi))
+                    loi.Add(new(nameof(model.MaThietBi), "Thiết bị đang có phiếu chờ xử lý/đang sửa chữa. Không thể tạo phiếu trùng."));
+            }
 
-    if (model.MaThietBi.HasValue)
-    {
-        thietBi = await _uow.ThietBis.GetByIdAsync(model.MaThietBi.Value);
+            if (!modelHopLe || loi.Count > 0 || thietBi == null)
+                return KetQuaDichVu.DuLieuKhongHopLe(loi);
 
-        if (thietBi == null || thietBi.MaKhachHang != maKhachHang)
-            loi.Add(new(nameof(model.MaThietBi), "Thiết bị không tồn tại hoặc không thuộc quyền sở hữu của bạn."));
-        else if (thietBi.TrangThai != TrangThaiThietBiEnum.KhaDung)
-            loi.Add(new(nameof(model.MaThietBi), "Thiết bị hiện không ở trạng thái khả dụng để tiếp nhận sửa chữa."));
-        else if (await _uow.PhieuSuaChuas.KiemTraThietBiCoPhieuMoHoacDangSuaAsync(thietBi.MaThietBi))
-            loi.Add(new(nameof(model.MaThietBi), "Thiết bị đang có phiếu chờ xử lý/đang sửa chữa. Không thể tạo phiếu trùng."));
-    }
+            var phieu = new PhieuSuaChua
+            {
+                MaThietBi = thietBi.MaThietBi,
+                MaKhachHang = maKhachHang,
+                NgayTiepNhan = DateTime.Now,
+                NoiDungLoi = model.NoiDungLoi.Trim(),
+                MucDo = model.MucDo,
+                HanDuKien = model.HanDuKien?.Date,
+                TrangThai = TrangThaiPhieuEnum.ChoXuLy,
+                // Mỗi lần đổi trạng thái (kể cả lúc tạo mới) ghi 1 dòng lịch sử - THIETKE.md mục 2.4
+                LichSus = new List<LichSuTrangThaiPhieu>
+                {
+                    new()
+                    {
+                        MaTaiKhoanThucHien = maTaiKhoan,
+                        TrangThaiCu = null,
+                        TrangThaiMoi = TrangThaiPhieuEnum.ChoXuLy,
+                        ThoiGian = DateTime.Now,
+                        GhiChu = "Tạo phiếu sửa chữa"
+                    }
+                }
+            };
 
-    if (!modelHopLe || loi.Count > 0 || thietBi == null)
-        return KetQuaDichVu.DuLieuKhongHopLe(loi);
+            await _uow.PhieuSuaChuas.AddAsync(phieu);
+            await _uow.SaveChangesAsync();
+            return KetQuaDichVu.Ok($"Đã tạo phiếu {UiHelper.Ma("PSC", phieu.MaPhieu)}. Phiếu đang chờ tiếp nhận.");
+        }
 
-    await using var transaction = await _uow.BeginTransactionAsync();
+        public async Task<PhieuSuaChua?> LayChiTietCuaToiAsync(int maPhieu, int? maTaiKhoan)
+        {
+            var maKhachHang = await LayMaKhachHangHienTaiAsync(maTaiKhoan);
+            if (maKhachHang == null) return null;
 
-    var phieu = new PhieuSuaChua
-    {
-        MaThietBi = thietBi.MaThietBi,
-        MaKhachHang = maKhachHang,
-        NgayTiepNhan = DateTime.Now,
-        NoiDungLoi = model.NoiDungLoi.Trim(),
-        MucDo = model.MucDo,
-        HanDuKien = model.HanDuKien?.Date,
-        TrangThai = TrangThaiPhieuEnum.ChoXuLy
-    };
-
-    await _uow.PhieuSuaChuas.AddAsync(phieu);
-    await _uow.SaveChangesAsync();
-
-    await _uow.LichSuTrangThaiPhieus.AddAsync(new LichSuTrangThaiPhieu
-    {
-        MaPhieu = phieu.MaPhieu,
-        MaTaiKhoanThucHien = maTaiKhoan,
-        TrangThaiCu = null,
-        TrangThaiMoi = TrangThaiPhieuEnum.ChoXuLy,
-        ThoiGian = DateTime.Now,
-        GhiChu = "Khách hàng tạo phiếu sửa chữa."
-    });
-
-    await _uow.SaveChangesAsync();
-    await transaction.CommitAsync();
-
-    return KetQuaDichVu.Ok(
-        $"Đã tạo phiếu {UiHelper.Ma("PSC", phieu.MaPhieu)}. Phiếu đang chờ tiếp nhận.");
-}
+            var phieu = await _uow.PhieuSuaChuas.LayChiTietKemTatCaThongTinAsync(maPhieu);
+            // Phiếu của người khác được coi như không tồn tại.
+            return phieu != null && phieu.MaKhachHang == maKhachHang.Value ? phieu : null;
+        }
 
         public async Task<KetQuaDichVu> KiemTraCoTheHuyAsync(int maPhieu, int? maTaiKhoan, VaiTroEnum? vaiTro)
         {
@@ -300,40 +305,37 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
                 : KetQuaDichVu.Ok();
         }
 
-       public async Task<KetQuaDichVu> HuyPhieuAsync(
-    HuyPhieuViewModel model, int? maTaiKhoan, VaiTroEnum? vaiTro, bool modelHopLe)
-{
-    var phieu = await LayPhieuCuaNguoiDungAsync(model.MaPhieu, maTaiKhoan, vaiTro);
-    if (phieu == null) return KetQuaDichVu.KhongTimThay();
+        public async Task<KetQuaDichVu> HuyPhieuAsync(
+            HuyPhieuViewModel model, int? maTaiKhoan, VaiTroEnum? vaiTro, bool modelHopLe)
+        {
+            if (!maTaiKhoan.HasValue) return KetQuaDichVu.KhongTimThay();
 
-    if (phieu.TrangThai != TrangThaiPhieuEnum.ChoXuLy)
-        return KetQuaDichVu.Loi("Phiếu không còn ở trạng thái Chờ xử lý nên không thể hủy.");
+            var phieu = await LayPhieuCuaNguoiDungAsync(model.MaPhieu, maTaiKhoan, vaiTro);
+            if (phieu == null) return KetQuaDichVu.KhongTimThay();
 
-    if (!modelHopLe) return KetQuaDichVu.DuLieuKhongHopLe();
+            if (phieu.TrangThai != TrangThaiPhieuEnum.ChoXuLy)
+                return KetQuaDichVu.Loi("Phiếu không còn ở trạng thái Chờ xử lý nên không thể hủy.");
 
-    if (!maTaiKhoan.HasValue)
-        return KetQuaDichVu.Loi("Không xác định được tài khoản thực hiện hủy phiếu.");
+            if (!modelHopLe) return KetQuaDichVu.DuLieuKhongHopLe();
 
-    var trangThaiCu = phieu.TrangThai;
-    var lyDo = model.LyDo.Trim();
+            var lyDo = model.LyDo.Trim();
+            phieu.TrangThai = TrangThaiPhieuEnum.Huy;
+            phieu.LyDoHuyTuChoi = lyDo;
 
-    phieu.TrangThai = TrangThaiPhieuEnum.Huy;
-    phieu.LyDoHuyTuChoi = lyDo;
+            // Ghi lịch sử cùng lúc với đổi trạng thái (1 lần SaveChanges nên cùng thành công hoặc cùng thất bại).
+            await _uow.LichSuTrangThaiPhieus.AddAsync(new LichSuTrangThaiPhieu
+            {
+                MaPhieu = phieu.MaPhieu,
+                MaTaiKhoanThucHien = maTaiKhoan.Value,
+                TrangThaiCu = TrangThaiPhieuEnum.ChoXuLy,
+                TrangThaiMoi = TrangThaiPhieuEnum.Huy,
+                ThoiGian = DateTime.Now,
+                GhiChu = lyDo
+            });
+            await _uow.SaveChangesAsync();
 
-    await _uow.LichSuTrangThaiPhieus.AddAsync(new LichSuTrangThaiPhieu
-    {
-        MaPhieu = phieu.MaPhieu,
-        MaTaiKhoanThucHien = maTaiKhoan.Value,
-        TrangThaiCu = trangThaiCu,
-        TrangThaiMoi = TrangThaiPhieuEnum.Huy,
-        ThoiGian = DateTime.Now,
-        GhiChu = lyDo
-    });
-
-    await _uow.SaveChangesAsync();
-
-    return KetQuaDichVu.Ok($"Đã hủy phiếu {UiHelper.Ma("PSC", phieu.MaPhieu)}.");
-}
+            return KetQuaDichVu.Ok($"Đã hủy phiếu {UiHelper.Ma("PSC", phieu.MaPhieu)}.");
+        }
 
         // ===================== HÀM NỘI BỘ =====================
 
@@ -359,9 +361,5 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
                 (TrangThaiPhieuEnum.DangXuLy, TrangThaiPhieuEnum.Huy) => true,
                 _ => false
             };
-            public async Task<List<PhieuSuaChua>> LayDanhSachTheoKyThuatVienAsync(int maKyThuatVien)
-{
-    return await _uow.PhieuSuaChuas.LayDanhSachTheoKyThuatVienAsync(maKyThuatVien);
-}
     }
 }

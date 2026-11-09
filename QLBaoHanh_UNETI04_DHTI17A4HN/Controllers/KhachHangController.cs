@@ -1,3 +1,7 @@
+// Họ và tên: David Thành
+// Mã sinh viên: 23103100239
+// Nội dung thực hiện: Module 3 - quản lý khách hàng (Admin/NV: danh sách, chi tiết, thêm, sửa, đổi trạng thái, xóa) và hồ sơ cá nhân của khách hàng.
+
 using Microsoft.AspNetCore.Mvc;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Helpers;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models.Enums;
@@ -6,6 +10,7 @@ using QLBaoHanh_UNETI04_DHTI17A4HN.ViewModels;
 
 namespace QLBaoHanh_UNETI04_DHTI17A4HN.Controllers
 {
+    // Cả Controller: chỉ cần đăng nhập (khách hàng dùng HoSo). Action quản trị có [PhanQuyen(Admin, NhanVien)] riêng.
     [PhanQuyen]
     public class KhachHangController : Controller
     {
@@ -13,14 +18,96 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Controllers
 
         public KhachHangController(IKhachHangService service) => _service = service;
 
-        // Danh sách khách hàng chỉ dành cho Admin/Nhân viên.
+        // ===================== ADMIN / NHÂN VIÊN =====================
+
         [PhanQuyen(VaiTroEnum.Admin, VaiTroEnum.NhanVien)]
-        public async Task<IActionResult> Index(string? tuKhoa, bool? trangThai)
+        public async Task<IActionResult> Index(string? tuKhoa, bool? trangThai, LoaiKhachHangEnum? loai, int trang = 1)
+            => View(await _service.LayDanhSachAsync(tuKhoa, trangThai, loai, trang));
+
+        [PhanQuyen(VaiTroEnum.Admin, VaiTroEnum.NhanVien)]
+        public async Task<IActionResult> Details(int id)
         {
-            ViewBag.TuKhoa = string.IsNullOrWhiteSpace(tuKhoa) ? tuKhoa : tuKhoa.Trim();
-            ViewBag.TrangThai = trangThai;
-            return View(await _service.TimKiemAsync(tuKhoa, trangThai));
+            var kh = await _service.LayChiTietAsync(id);
+            return kh == null ? NotFound() : View(kh);
         }
+
+        [HttpGet]
+        [PhanQuyen(VaiTroEnum.Admin, VaiTroEnum.NhanVien)]
+        public async Task<IActionResult> Create() => View(await _service.TaoFormMoiAsync());
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [PhanQuyen(VaiTroEnum.Admin, VaiTroEnum.NhanVien)]
+        public async Task<IActionResult> Create(KhachHangFormViewModel model)
+        {
+            var ketQua = await _service.TaoAsync(model, ModelState.IsValid);
+            if (ketQua.ThanhCong)
+            {
+                this.DatThongBao(ketQua);
+                return RedirectToAction(nameof(Index));
+            }
+
+            ketQua.GopLoiVaoModelState(ModelState);
+            await _service.NapLaiTaiKhoanAsync(model);
+            return View(model);
+        }
+
+        [HttpGet]
+        [PhanQuyen(VaiTroEnum.Admin, VaiTroEnum.NhanVien)]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var model = await _service.LayFormSuaAsync(id);
+            return model == null ? NotFound() : View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [PhanQuyen(VaiTroEnum.Admin, VaiTroEnum.NhanVien)]
+        public async Task<IActionResult> Edit(int id, KhachHangFormViewModel model)
+        {
+            var ketQua = await _service.CapNhatAsync(id, model, ModelState.IsValid);
+            switch (ketQua.Loai)
+            {
+                case LoaiKetQua.KhongTimThay:
+                    return NotFound();
+                case LoaiKetQua.ThanhCong:
+                    this.DatThongBao(ketQua);
+                    return RedirectToAction(nameof(Details), new { id });
+                default:
+                    ketQua.GopLoiVaoModelState(ModelState);
+                    model.MaKhachHang = id;
+                    await _service.NapLaiTaiKhoanAsync(model);
+                    return View(model);
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [PhanQuyen(VaiTroEnum.Admin, VaiTroEnum.NhanVien)]
+        public async Task<IActionResult> DoiTrangThai(int id, string? quayVe)
+        {
+            var ketQua = await _service.DoiTrangThaiAsync(id);
+            if (ketQua.Loai == LoaiKetQua.KhongTimThay) return NotFound();
+
+            this.DatThongBao(ketQua);
+            return quayVe == nameof(Details)
+                ? RedirectToAction(nameof(Details), new { id })
+                : RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [PhanQuyen(VaiTroEnum.Admin, VaiTroEnum.NhanVien)]
+        public async Task<IActionResult> Xoa(int id)
+        {
+            var ketQua = await _service.XoaAsync(id);
+            if (ketQua.Loai == LoaiKetQua.KhongTimThay) return NotFound();
+
+            this.DatThongBao(ketQua);
+            return RedirectToAction(nameof(Index));
+        }
+
+        // ===================== KHÁCH HÀNG: HỒ SƠ CÁ NHÂN =====================
 
         // Hồ sơ của chính tài khoản hiện tại; không nhận MaKhachHang từ URL.
         public async Task<IActionResult> HoSo()
@@ -31,7 +118,7 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Controllers
             var hoSo = await _service.LayHoSoAsync(maTaiKhoan.Value);
             if (hoSo == null)
             {
-                TempData["Loi"] = "Tài khoản chưa có hồ sơ khách hàng. Vui lòng liên hệ nhân viên.";
+                // View tự hiện cảnh báo khi MaKhachHang = 0 (không dùng TempData để thông báo không lặp lại ở request sau).
                 return View("HoSo", new HoSoKhachHangViewModel());
             }
 

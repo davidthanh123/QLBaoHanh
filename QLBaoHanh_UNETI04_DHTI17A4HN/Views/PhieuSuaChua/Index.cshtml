@@ -1,6 +1,12 @@
-﻿@* Họ và tên: [điền họ tên của bạn] *@
-@* Mã sinh viên: [điền mã sinh viên của bạn] *@
-@* Nội dung thực hiện: Module 4 - danh sách xử lý, tìm kiếm, lọc và phân trang phiếu. *@
+@*
+   Họ và tên: David Thành
+   Mã sinh viên: 23103100239
+   Nội dung thực hiện: Module 3 - danh sách phiếu của khách hàng, nút Theo dõi / Hủy phiếu.
+
+   Họ và tên: [người phụ trách Module 4 điền]
+   Mã sinh viên: [người phụ trách Module 4 điền]
+   Nội dung thực hiện: Module 4 - danh sách xử lý, tìm kiếm, lọc và phân trang phiếu.
+*@
 @model PhieuSuaChuaDanhSachViewModel
 @using QLBaoHanh_UNETI04_DHTI17A4HN.Helpers
 @using QLBaoHanh_UNETI04_DHTI17A4HN.Models.Enums
@@ -107,9 +113,13 @@
                             {
                                 <a asp-action="Details" asp-route-id="@p.MaPhieu" class="btn btn-sm btn-outline-primary">Chi tiết</a>
                             }
-                            else if (p.TrangThai == TrangThaiPhieuEnum.ChoXuLy)
+                            else
                             {
-                                <a asp-action="Huy" asp-route-id="@p.MaPhieu" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-circle me-1"></i>Hủy</a>
+                                <a asp-action="TheoDoi" asp-route-id="@p.MaPhieu" class="btn btn-sm btn-outline-primary">Theo dõi</a>
+                                @if (p.TrangThai == TrangThaiPhieuEnum.ChoXuLy)
+                                {
+                                    <a asp-action="Huy" asp-route-id="@p.MaPhieu" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-circle me-1"></i>Hủy</a>
+                                }
                             }
                         </td>
                     </tr>

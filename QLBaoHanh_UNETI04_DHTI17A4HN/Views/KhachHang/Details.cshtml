@@ -1,0 +1,79 @@
+@*
+   Họ và tên: David Thành
+   Mã sinh viên: 23103100239
+   Nội dung thực hiện: Module 3 - Chi tiết khách hàng: thông tin, thiết bị và phiếu sửa chữa liên quan.
+*@
+@model KhachHang
+@{
+    ViewData["Title"] = "Chi tiết khách hàng";
+    var tieuDeDoi = Model.TrangThai ? "Ngừng hoạt động" : "Kích hoạt lại";
+}
+
+<div class="page-header">
+    <div>
+        <h1>@Model.HoTen</h1>
+        <p>@UiHelper.Ma("KH", Model.MaKhachHang) · tạo ngày @UiHelper.Ngay(Model.NgayTao)</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-outline-secondary" asp-action="Index">Quay lại</a>
+        <button type="button" class="btn btn-outline-secondary"
+                data-bs-toggle="modal" data-bs-target="#qbXacNhan"
+                data-action="@Url.Action("DoiTrangThai", new { id = Model.MaKhachHang, quayVe = "Details" })"
+                data-title="@tieuDeDoi"
+                data-message="@(Model.TrangThai ? "Chuyển khách hàng này sang ngừng hoạt động? Khách đang có phiếu chưa đóng sẽ không ngừng được." : "Kích hoạt lại khách hàng này?")"
+                data-ok="@tieuDeDoi">@tieuDeDoi</button>
+        <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.MaKhachHang">Sửa khách hàng</a>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <dl class="detail-grid">
+            <div><dt>Số điện thoại</dt><dd>@Model.SoDienThoai</dd></div>
+            <div><dt>Email</dt><dd>@(Model.Email ?? "—")</dd></div>
+            <div><dt>CCCD</dt><dd class="mono">@(Model.CCCD ?? "—")</dd></div>
+            <div><dt>Loại khách hàng</dt><dd><partial name="_StatusBadge" model="UiHelper.Badge(Model.LoaiKhachHang)" /></dd></div>
+            <div><dt>Mã số thuế</dt><dd class="mono">@(Model.MaSoThue ?? "—")</dd></div>
+            <div><dt>Trạng thái</dt><dd><partial name="_StatusBadge" model="UiHelper.BadgeHoatDong(Model.TrangThai)" /></dd></div>
+            <div><dt>Tài khoản đăng nhập</dt><dd>@(Model.TaiKhoan?.TenDangNhap ?? "Chưa liên kết")</dd></div>
+            <div><dt>Số thiết bị</dt><dd>@Model.ThietBis.Count</dd></div>
+            <div class="is-wide"><dt>Địa chỉ</dt><dd>@(string.IsNullOrEmpty(Model.DiaChi) ? "—" : Model.DiaChi)</dd></div>
+            <div class="is-wide"><dt>Ghi chú</dt><dd>@(string.IsNullOrEmpty(Model.GhiChu) ? "—" : Model.GhiChu)</dd></div>
+        </dl>
+    </div>
+</div>
+
+<div class="table-card">
+    <div class="card-body pb-0"><h2 class="h6 mb-2">Phiếu sửa chữa (@Model.PhieuSuaChuas.Count)</h2></div>
+    @if (Model.PhieuSuaChuas.Count == 0)
+    {
+        <div class="empty-state"><p>Khách hàng này chưa có phiếu sửa chữa nào.</p></div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+                <tr><th>Mã phiếu</th><th>Thiết bị</th><th>Ngày tiếp nhận</th><th>Trạng thái</th><th></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model.PhieuSuaChuas)
+                {
+                    <tr class="@UiHelper.HangMo(p.TrangThai)">
+                        <td class="mono">@UiHelper.Ma("PSC", p.MaPhieu)</td>
+                        <td>
+                            <div class="cell-title">@p.ThietBi?.TenThietBi</div>
+                            <div class="cell-sub">SN: @p.ThietBi?.SerialNumber</div>
+                        </td>
+                        <td>@UiHelper.NgayGio(p.NgayTiepNhan)</td>
+                        <td><partial name="_StatusBadge" model="UiHelper.Badge(p.TrangThai)" /></td>
+                        <td class="text-end">
+                            <a class="btn btn-ghost btn-icon" asp-controller="PhieuSuaChua" asp-action="Details" asp-route-id="@p.MaPhieu" title="Xem phiếu"><i class="bi bi-eye"></i></a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+<partial name="_XacNhanModal" />

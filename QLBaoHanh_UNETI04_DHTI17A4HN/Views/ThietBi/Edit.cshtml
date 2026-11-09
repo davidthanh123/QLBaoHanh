@@ -1,0 +1,22 @@
+@*
+   Họ và tên: Đào Hoàng Thành
+   Mã sinh viên: 23103100223
+   Nội dung thực hiện: Module 2 - Sửa thông tin thiết bị.
+*@
+@model ThietBi
+@{
+    ViewData["Title"] = "Sửa thiết bị";
+}
+
+<div class="page-header">
+    <div>
+        <h1>Sửa thiết bị</h1>
+        <p class="mono">@Model.SerialNumber · @UiHelper.Ma("TB", Model.MaThietBi)</p>
+    </div>
+</div>
+
+<partial name="_Form" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
