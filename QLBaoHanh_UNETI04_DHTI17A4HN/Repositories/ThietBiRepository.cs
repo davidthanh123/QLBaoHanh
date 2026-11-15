@@ -96,7 +96,12 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Repositories
 
         public Task<List<ThietBi>> LayDanhSachKhaDungTheoKhachHangAsync(int maKhachHang) =>
             _dbSet.AsNoTracking()
-                .Where(t => t.MaKhachHang == maKhachHang && t.TrangThai == TrangThaiThietBiEnum.KhaDung)
+                .Where(t => t.MaKhachHang == maKhachHang
+                    && t.TrangThai == TrangThaiThietBiEnum.KhaDung
+                    // Loại các thiết bị đang có phiếu chờ xử lý/đang sửa chữa (tránh tạo phiếu trùng)
+                    && !_context.PhieuSuaChuas.Any(p => p.MaThietBi == t.MaThietBi
+                        && (p.TrangThai == TrangThaiPhieuEnum.ChoXuLy
+                            || p.TrangThai == TrangThaiPhieuEnum.DangXuLy)))
                 .OrderBy(t => t.TenThietBi)
                 .ToListAsync();
 

@@ -96,14 +96,21 @@ namespace QLBaoHanh_UNETI04_DHTI17A4HN.Data
             // ===== 4. Thiết bị (15): lẫn lộn còn/hết hạn bảo hành =====
             // Trạng thái thiết bị tạm đặt KhaDung, sẽ cập nhật theo phiếu mới nhất ở bước 6.
             var thietBis = new List<ThietBi>();
+            var chuSoHuuThietBi = new[] { 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 2, 3, 0, 1, 4 };
             for (int i = 1; i <= 15; i++)
             {
-                var loai = loais[(i - 1) % loais.Count];
+                // Lệch loại thêm 1 sau mỗi 5 thiết bị để loại không trùng chu kỳ với trạng thái phiếu (cũng xoay vòng 5),
+                // nếu không các thiết bị tạo được phiếu của cùng một khách sẽ cùng một loại. Vẫn đúng 3 thiết bị/loại.
+                var loai = loais[((i - 1) + (i - 1) / 5) % loais.Count];
                 var ngayMua = DateTime.Today.AddMonths(-i * 2);
+                // Phân chủ sở hữu thiết bị (chỉ số khách trong khachHangs): khách 1 và khách 2 là 2 tài khoản
+                // đăng nhập được nên mỗi người có 6 thiết bị, trong đó 3 thiết bị tạo được phiếu mới
+                // (phiếu mới nhất là HoanThanh/Huy). 3 thiết bị còn lại chia cho khách 3, 4, 5.
+                int maChuThietBi = chuSoHuuThietBi[i - 1];
                 thietBis.Add(new ThietBi
                 {
                     MaLoai = loai.MaLoai,
-                    MaKhachHang = khachHangs[i - 1].MaKhachHang,
+                    MaKhachHang = khachHangs[maChuThietBi].MaKhachHang,
                     SerialNumber = $"SN{i:D6}",
                     TenThietBi = $"{loai.TenLoai} {loai.HangSanXuat} #{i}",
                     NgayMua = ngayMua,
