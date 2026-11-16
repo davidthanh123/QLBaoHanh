@@ -1,4 +1,6 @@
-
+// Họ và tên: Nguyễn Văn Vũ
+// Mã sinh viên: Điền mã sinh viên của bạn
+// Nội dung thực hiện: Module 5 - Dashboard
 namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
 {
     public record ThongKeTrangThaiPhieu(

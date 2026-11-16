@@ -1,5 +1,5 @@
-// Họ và tên: ........................ (người phụ trách Module 5 điền)
-// Mã sinh viên: ........................
+// Họ và tên: Nguyễn Văn Vũ
+// Mã sinh viên: 23103100213
 // Nội dung thực hiện: Entity ThongBao - thông báo trong hệ thống/email (nâng cao).
 
 using System.ComponentModel.DataAnnotations;

@@ -1,5 +1,5 @@
-// Họ và tên: ........................ (người phụ trách Module 5 điền)
-// Mã sinh viên: ........................
+// Họ và tên: Nguyễn Văn Vũ
+// Mã sinh viên: 23103100213
 // Nội dung thực hiện: Entity LinhKien - quản lý linh kiện.
 
 using System.ComponentModel.DataAnnotations;
@@ -7,8 +7,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QLBaoHanh_UNETI04_DHTI17A4HN.Models
 {
-    // MODULE 5 (Vũ): Quản lý linh kiện
-    // LƯU Ý: đề KHÔNG liệt kê thuộc tính của LinhKien, các cột dưới đây do nhóm đề xuất (xem Doc/THIETKE.md).
     [Table("LinhKien")]
     public class LinhKien
     {
