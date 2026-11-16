@@ -1,5 +1,5 @@
-// Họ và tên: ........................ (người phụ trách Module 2 điền)
-// Mã sinh viên: ........................
+// Họ và tên: Đào Hoàng Thành 
+// Mã sinh viên: 23103100223
 // Nội dung thực hiện: Entity TepDinhKem - tệp đính kèm dùng chung (nâng cao).
 
 using System.ComponentModel.DataAnnotations;

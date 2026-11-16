@@ -1,13 +1,12 @@
-// Họ và tên: [điền họ tên của bạn]
-// Mã sinh viên: [điền mã sinh viên của bạn]
+// Họ và tên: Đào Hoàng Thành
+// Mã sinh viên: 23103100223
 // Nội dung thực hiện: Module 2 - nghiệp vụ Thiết bị: danh sách (tìm kiếm, lọc, sắp xếp, phân trang), thêm, sửa, chi tiết, đổi trạng thái, xóa có kiểm soát.
 
-using Microsoft.EntityFrameworkCore;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models.Enums;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Repositories;
 using QLBaoHanh_UNETI04_DHTI17A4HN.ViewModels;
-
+using Microsoft.EntityFrameworkCore;
 namespace QLBaoHanh_UNETI04_DHTI17A4HN.Services
 {
     public class ThietBiService : IThietBiService

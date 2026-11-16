@@ -1,5 +1,5 @@
-// Họ và tên: [điền họ tên của bạn]
-// Mã sinh viên: [điền mã sinh viên của bạn]
+// Họ và tên: Đào Hoàng Thành
+// Mã sinh viên: 23103100223
 // Nội dung thực hiện: Module 2 - nghiệp vụ Thiết bị (tách từ ThietBiController).
 
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models;
