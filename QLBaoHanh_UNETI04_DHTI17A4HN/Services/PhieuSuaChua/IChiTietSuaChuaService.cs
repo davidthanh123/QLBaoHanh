@@ -1,6 +1,6 @@
-// Họ và tên: [điền họ tên của bạn]
-// Mã sinh viên: [điền mã sinh viên của bạn]
-// Nội dung thực hiện: Nghiệp vụ chi tiết sửa chữa và tồn kho linh kiện (tách từ ChiTietSuaChuaController).
+// Họ và tên: Nguyễn Văn Vũ
+// Mã sinh viên: Điền mã sinh viên của bạn
+// Nội dung thực hiện: Module 5 - Chi tiết sửa chữa.
 
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models;
 

@@ -1,5 +1,5 @@
 // Họ và tên: Nguyễn Văn Vũ
-// Mã sinh viên: Điền mã sinh viên của bạn
+// Mã sinh viên: 23103100213
 // Nội dung thực hiện: Module 5 - nghiệp vụ Quản lý linh kiện (tách từ LinhKienController).
 
 using QLBaoHanh_UNETI04_DHTI17A4HN.Models;

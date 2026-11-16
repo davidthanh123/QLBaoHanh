@@ -1,3 +1,6 @@
+// Họ và tên: Nguyễn Văn Vũ
+// Mã sinh viên: Điền mã sinh viên của bạn
+// Nội dung thực hiện: Module 5 - Chitietsuachuacontroller
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using QLBaoHanh_UNETI04_DHTI17A4HN.Helpers;
